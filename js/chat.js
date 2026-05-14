@@ -44,18 +44,10 @@ function renderChatMessages() {
 function renderChatInput() {
   const wrap = document.createElement('div');
   wrap.className = 'chat-input-wrap';
-  const muted = GRANT_TTS.isMuted();
   wrap.innerHTML = `
     <input type="text" id="chatInput" placeholder="Ask Grant anything about grants..."
            onkeydown="if(event.key==='Enter')handleChatFromInput()">
     <button onclick="handleChatFromInput()">Send</button>
-    <button class="voice-toggle-row voice-badge" data-badge="full"
-            onclick="GRANT_TTS.toggleMute()"
-            style="background:${muted ? 'rgba(239,68,68,0.12)' : 'rgba(42,107,59,0.12)'};
-                   color:${muted ? '#ef4444' : 'var(--caes-green-mid)'};
-                   border-color:${muted ? 'rgba(239,68,68,0.3)' : 'rgba(42,107,59,0.3)'}">
-      ${muted ? '🔇  Voice Off — click to enable' : '🔊  Voice On — click to mute'}
-    </button>
   `;
   return wrap;
 }

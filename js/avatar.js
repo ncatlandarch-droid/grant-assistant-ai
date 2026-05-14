@@ -18,9 +18,11 @@ function renderAvatarPanel() {
     <div class="avatar-img-wrap" id="avatarWrap"
          onclick="handleAvatarClick(event)" title="Click to hear Grant speak" style="cursor:pointer">
       <img src="${_A.image}" alt="${_A.name}" id="avatarImg">
-      <button class="voice-badge" onclick="event.stopPropagation(); GRANT_TTS.toggleMute()" title="Toggle voice on/off">🔊</button>
     </div>
-    <div class="avatar-name">${_A.name}</div>
+    <div class="avatar-name-row">
+      <span class="avatar-name">${_A.name}</span>
+      <button class="voice-badge" onclick="GRANT_TTS.toggleMute()" title="Toggle voice on/off">🔊</button>
+    </div>
     <div class="avatar-role">${_A.role}</div>
     <div style="margin-top:10px; display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
       ${_A.modes.map(m => `

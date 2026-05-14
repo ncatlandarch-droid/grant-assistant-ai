@@ -131,12 +131,13 @@ const TTS = {
     });
   },
 
-  /** Stop current + clear queue */
+  /** Stop current + clear queue + immediately cut audio */
   stop() {
     TTS.queue = [];
     TTS.speaking = false;
     TTS.processing = false;
     TTS.updateAvatarState(false);
+    if (_audioCtx && _audioCtx.state === 'running') _audioCtx.suspend();
   },
 
   /** Toggle mute */
@@ -155,17 +156,10 @@ const TTS = {
     if (wrap) wrap.classList.toggle('speaking', speaking);
   },
 
-  /** Update voice badge icon — handles both small icon badge and full-text toggle row */
+  /** Update voice badge icon */
   updateVoiceBadge() {
     document.querySelectorAll('.voice-badge').forEach(el => {
-      if (el.dataset.badge === 'full') {
-        el.textContent = TTS.muted ? '🔇  Voice Off — click to enable' : '🔊  Voice On — click to mute';
-        el.style.background   = TTS.muted ? 'rgba(239,68,68,0.12)'    : 'rgba(42,107,59,0.12)';
-        el.style.color        = TTS.muted ? '#ef4444'                  : 'var(--caes-green-mid)';
-        el.style.borderColor  = TTS.muted ? 'rgba(239,68,68,0.3)'     : 'rgba(42,107,59,0.3)';
-      } else {
-        el.textContent = TTS.muted ? '🔇' : '🔊';
-      }
+      el.textContent = TTS.muted ? '🔇' : '🔊';
     });
   }
 };
