@@ -81,20 +81,6 @@ function renderDashboard() {
   const inst = window.INSTITUTION_CONFIG?.institution;
   el.innerHTML = `
 
-    <!-- ── PROPOSAL BUILDER ── -->
-    <div class="proposal-builder">
-      <div class="pb-icon">💡</div>
-      <div class="pb-content">
-        <div class="pb-title">Describe your research idea</div>
-        <div class="pb-sub">Grant will match funding opportunities, draft your NOI abstract, flag compliance needs, and build your submission timeline — instantly.</div>
-        <div class="pb-input-wrap">
-          <textarea id="ideaInput" class="pb-input" rows="2"
-            placeholder="e.g. I want to study the impact of cover crops on soil carbon sequestration in small farms across the Southeast..."></textarea>
-          <button class="pb-btn" onclick="launchProposalBuilder()">Get Matched →</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Welcome Banner -->
     <div class="welcome-banner">
       <div class="welcome-banner-inner">
@@ -125,6 +111,20 @@ function renderDashboard() {
             <div class="welcome-stat-val">${stats.byStage[12] || 0}</div>
             <div class="welcome-stat-label">Submitted</div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROPOSAL BUILDER ── -->
+    <div class="proposal-builder">
+      <div class="pb-icon">💡</div>
+      <div class="pb-content">
+        <div class="pb-title">Describe your research idea</div>
+        <div class="pb-sub">Grant will match funding opportunities, draft your NOI abstract, flag compliance needs, and build your submission timeline — instantly.</div>
+        <div class="pb-input-wrap">
+          <textarea id="ideaInput" class="pb-input" rows="2"
+            placeholder="e.g. I want to study the impact of cover crops on soil carbon sequestration in small farms across the Southeast..."></textarea>
+          <button class="pb-btn" onclick="launchProposalBuilder()">Get Matched →</button>
         </div>
       </div>
     </div>
