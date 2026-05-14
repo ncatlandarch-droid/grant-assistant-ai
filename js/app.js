@@ -13,7 +13,9 @@ const st = {
   wizardStep: 0,
   noiData: {},
   _greeting: null,
-  submissions: []   // live Firestore submissions
+  submissions: [],  // live Firestore submissions
+  currentUser: null,
+  isAdmin: false
 };
 
 // --- DOM Helper ---

@@ -63,6 +63,19 @@ function renderHeader() {
       `).join('')}
     </nav>
 
+    <div class="header-admin">
+      ${st.isAdmin ? `
+        <div class="admin-pill">
+          ${st.currentUser?.photoURL ? `<img src="${st.currentUser.photoURL}" class="admin-avatar" alt="Admin">` : ''}
+          <span class="admin-label">Admin</span>
+          <button class="admin-signout" onclick="signOutAdmin()">Sign Out</button>
+        </div>
+      ` : `
+        <button class="admin-login-btn" onclick="signInWithGoogle()" title="OSP Admin Login">
+          🔐 Admin
+        </button>
+      `}
+    </div>
     <button class="hamburger" onclick="toggleMobileNav()" id="hamburgerBtn" aria-label="Menu">☰</button>
   `;
 

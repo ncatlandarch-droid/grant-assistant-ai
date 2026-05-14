@@ -1301,6 +1301,111 @@ input, select, textarea { font-family: inherit; }
 .pb-btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
 /* ================================================================
+   ADMIN UI
+   ================================================================ */
+
+/* Header admin area */
+.header-admin {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.admin-login-btn {
+  background: rgba(253,185,39,0.12);
+  color: var(--aggie-gold);
+  border: 1px solid rgba(253,185,39,0.3);
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+.admin-login-btn:hover {
+  background: rgba(253,185,39,0.22);
+  border-color: var(--aggie-gold);
+}
+
+.admin-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,160,80,0.12);
+  border: 1px solid rgba(0,160,80,0.3);
+  border-radius: 20px;
+  padding: 4px 12px 4px 4px;
+}
+
+.admin-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.admin-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--caes-green-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.admin-signout {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+.admin-signout:hover { color: var(--text-secondary); }
+
+/* Pipeline card admin controls */
+.admin-card-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  flex-wrap: wrap;
+}
+
+.admin-advance-btn {
+  flex: 1;
+  background: rgba(0,160,80,0.15);
+  color: var(--caes-green-mid);
+  border: 1px solid rgba(0,160,80,0.3);
+  border-radius: var(--radius-sm);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.admin-advance-btn:hover { background: rgba(0,160,80,0.28); }
+
+.admin-delete-btn {
+  background: rgba(220,50,50,0.12);
+  color: #f87171;
+  border: 1px solid rgba(220,50,50,0.25);
+  border-radius: var(--radius-sm);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.admin-delete-btn:hover { background: rgba(220,50,50,0.25); }
+
+/* ================================================================
    RESPONSIVE
    ================================================================ */
 @media (max-width: 1100px) {

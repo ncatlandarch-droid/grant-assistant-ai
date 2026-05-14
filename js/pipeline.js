@@ -59,6 +59,11 @@ function renderPipeline() {
         <div class="pipeline-card-meta">${o.piName} · ${o.sponsor}</div>
         <div class="pipeline-card-meta">$${(o.estimatedFunding/1000).toFixed(0)}K · ${o.type}</div>
         ${o.isLive ? `<div style="font-size:0.65rem;color:var(--text-muted);margin-top:3px">${o.status || 'Stage ' + o.stage}</div>` : ''}
+        ${o.isLive && st.isAdmin ? `
+          <div class="admin-card-controls" onclick="event.stopPropagation()">
+            ${o.stage < 12 ? `<button class="admin-advance-btn" onclick="advanceSubmission('${o.id}', ${o.stage + 1})">Advance → Stage ${o.stage + 1}</button>` : '<span style="color:var(--caes-green-mid);font-size:0.7rem;font-weight:600">✓ Complete</span>'}
+            <button class="admin-delete-btn" onclick="confirmDeleteSubmission('${o.id}')">Delete</button>
+          </div>` : ''}
       `;
       col.appendChild(card);
     });
@@ -166,6 +171,25 @@ function renderOppDetail(opp) {
     </div>
   `;
   return el;
+}
+
+// ---- Admin action helpers ------------------------------------------------
+
+async function advanceSubmission(id, newStage) {
+  try {
+    await updateSubmissionStage(id, newStage);
+  } catch (err) {
+    console.error('Advance failed:', err);
+    alert('Could not advance submission. Please try again.');
+  }
+}
+
+function confirmDeleteSubmission(id) {
+  if (!confirm('Permanently delete this submission? This cannot be undone.')) return;
+  deleteSubmission(id).catch(err => {
+    console.error('Delete failed:', err);
+    alert('Could not delete submission. Please try again.');
+  });
 }
 
 function getDaysRemaining(deadline) {
