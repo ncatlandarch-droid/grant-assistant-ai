@@ -5,6 +5,12 @@
 function renderPipeline() {
   const el = document.createElement('div');
 
+  // Signed-in PI (non-admin) sees only their own proposals
+  if (st.currentUser && !st.isAdmin) {
+    el.appendChild(renderMySubmissions());
+    return el;
+  }
+
   // Merge live Firestore submissions + historical mock data
   const liveItems = (st.submissions || []);
   const mockItems = OPPORTUNITIES_DATA.map(o => ({ ...o, isLive: false }));
@@ -79,6 +85,82 @@ function renderPipeline() {
   });
 
   el.appendChild(board);
+  return el;
+}
+
+function renderMySubmissions() {
+  const email = st.currentUser?.email?.toLowerCase();
+  const mine  = (st.submissions || []).filter(s => s.piEmail?.toLowerCase() === email);
+  const name  = st.currentUser?.displayName?.split(' ')[0] || 'Researcher';
+
+  const el = document.createElement('div');
+
+  el.innerHTML = `
+    <div class="section-header">
+      <h2>📋 My <span>Proposals</span></h2>
+      <button class="btn btn-secondary btn-sm" onclick="setView('noi-wizard')">+ New NOI</button>
+    </div>
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:20px">
+      Welcome back, <strong style="color:var(--text-primary)">${name}</strong>.
+      ${mine.length > 0
+        ? `You have <strong style="color:var(--caes-green-mid)">${mine.length} active proposal${mine.length !== 1 ? 's' : ''}</strong> in the review process.`
+        : `You have no active proposals yet.`}
+    </p>
+  `;
+
+  if (mine.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'my-proposals-empty';
+    empty.innerHTML = `
+      <div style="font-size:2.5rem;margin-bottom:12px">📝</div>
+      <div style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:8px">No proposals submitted yet</div>
+      <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:20px">Submit a Notice of Intent to start tracking your proposal through the approval process.</div>
+      <button class="btn btn-primary" onclick="setView('noi-wizard')">Submit Your First NOI</button>
+    `;
+    el.appendChild(empty);
+    return el;
+  }
+
+  const list = document.createElement('div');
+  list.className = 'my-proposals-list';
+
+  mine.forEach(sub => {
+    const pct   = Math.round((sub.stage / 12) * 100);
+    const stage = PIPELINE_STAGES.find(s => s.id === sub.stage);
+    const card  = document.createElement('div');
+    card.className = 'my-proposal-card';
+
+    card.innerHTML = `
+      <div class="my-proposal-header">
+        <div>
+          <div class="my-proposal-title">${sub.title}</div>
+          <div class="my-proposal-meta">${sub.sponsor}${sub.program ? ' · ' + sub.program : ''}</div>
+        </div>
+        <div class="my-proposal-funding">$${(sub.estimatedFunding/1000).toFixed(0)}K</div>
+      </div>
+
+      <div class="my-proposal-stage-row">
+        <span class="my-proposal-stage-label">Stage ${sub.stage} of 12</span>
+        <span class="my-proposal-stage-name" style="color:${stage?.color || 'var(--caes-green-mid)'}">● ${sub.status || stage?.name || ''}</span>
+      </div>
+
+      <div class="my-proposal-progress-track">
+        ${PIPELINE_STAGES.map(s => `
+          <div class="my-proposal-pip ${s.id <= sub.stage ? 'active' : ''}"
+               style="${s.id <= sub.stage ? 'background:' + stage?.color : ''}"
+               title="Stage ${s.id}: ${s.name}"></div>
+        `).join('')}
+      </div>
+
+      <div class="my-proposal-footer">
+        <span style="color:var(--text-muted);font-size:0.75rem">${pct}% through review process</span>
+        ${sub.deadline ? `<span style="color:var(--text-muted);font-size:0.75rem">${getDaysRemaining(sub.deadline)}</span>` : ''}
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  el.appendChild(list);
   return el;
 }
 

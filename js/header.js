@@ -70,10 +70,18 @@ function renderHeader() {
           <span class="admin-label">Admin</span>
           <button class="admin-signout" onclick="signOutAdmin()">Sign Out</button>
         </div>
+      ` : st.currentUser ? `
+        <div class="pi-pill">
+          ${st.currentUser.photoURL ? `<img src="${st.currentUser.photoURL}" class="admin-avatar" alt="">` : '<span class="pi-avatar-fallback">👤</span>'}
+          <span class="pi-pill-name">${st.currentUser.displayName?.split(' ')[0] || 'Researcher'}</span>
+          <button class="pi-pill-track" onclick="setView('pipeline')">My Proposals</button>
+          <button class="admin-signout" onclick="signOutAdmin()">Sign Out</button>
+        </div>
       ` : `
-        <button class="admin-login-btn" onclick="signInWithGoogle()" title="OSP Admin Login">
-          🔐 Admin
-        </button>
+        <div class="header-auth-btns">
+          <button class="pi-login-btn" onclick="signInWithGoogle()" title="Sign in to track your submissions">👤 Track My Submissions</button>
+          <button class="admin-login-btn" onclick="signInWithGoogle()" title="OSP Admin Login">🔐 Admin</button>
+        </div>
       `}
     </div>
     <button class="hamburger" onclick="toggleMobileNav()" id="hamburgerBtn" aria-label="Menu">☰</button>

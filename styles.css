@@ -1304,6 +1304,66 @@ input, select, textarea { font-family: inherit; }
    ADMIN UI
    ================================================================ */
 
+/* Header auth — two-button state (not signed in) */
+.header-auth-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pi-login-btn {
+  background: rgba(253,185,39,0.1);
+  color: var(--aggie-gold);
+  border: 1px solid rgba(253,185,39,0.25);
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.pi-login-btn:hover { background: rgba(253,185,39,0.2); }
+
+/* PI user pill (signed in, not admin) */
+.pi-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(253,185,39,0.08);
+  border: 1px solid rgba(253,185,39,0.2);
+  border-radius: 20px;
+  padding: 4px 12px 4px 4px;
+}
+
+.pi-avatar-fallback {
+  font-size: 1rem;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pi-pill-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--aggie-gold);
+}
+
+.pi-pill-track {
+  background: rgba(253,185,39,0.15);
+  color: var(--aggie-gold);
+  border: none;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.pi-pill-track:hover { background: rgba(253,185,39,0.28); }
+
 /* Header admin area */
 .header-admin {
   margin-left: auto;
@@ -1404,6 +1464,105 @@ input, select, textarea { font-family: inherit; }
   transition: background 0.2s;
 }
 .admin-delete-btn:hover { background: rgba(220,50,50,0.25); }
+
+/* ================================================================
+   PI PORTAL — My Proposals
+   ================================================================ */
+
+.my-proposals-empty {
+  text-align: center;
+  padding: 60px 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.my-proposals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.my-proposal-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.my-proposal-card:hover {
+  border-color: rgba(253,185,39,0.3);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+
+.my-proposal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.my-proposal-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  line-height: 1.35;
+}
+
+.my-proposal-meta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.my-proposal-funding {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--aggie-gold);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.my-proposal-stage-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.my-proposal-stage-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.my-proposal-stage-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.my-proposal-progress-track {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 10px;
+}
+
+.my-proposal-pip {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.08);
+  transition: background 0.3s;
+}
+.my-proposal-pip.active {
+  background: var(--caes-green-mid);
+}
+
+.my-proposal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
 /* ================================================================
    RESPONSIVE
