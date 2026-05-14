@@ -44,16 +44,6 @@ function setView(view) {
   render();
 }
 
-// --- Overview strip (collapsible, no permanent storage) ---
-function toggleOverview() {
-  const body = document.getElementById('overviewBody');
-  const btn  = document.getElementById('overviewToggle');
-  if (!body) return;
-  const collapsed = body.style.display === 'none';
-  body.style.display = collapsed ? '' : 'none';
-  btn.textContent   = collapsed ? '▲ Hide' : '▼ Show';
-}
-
 // --- Proposal Builder ---
 function launchProposalBuilder() {
   const idea = document.getElementById('ideaInput')?.value?.trim();
@@ -90,30 +80,6 @@ function renderDashboard() {
   const active = OPPORTUNITIES_DATA.filter(o => o.stage < 12);
   const inst = window.INSTITUTION_CONFIG?.institution;
   el.innerHTML = `
-
-    <!-- ── OVERVIEW STRIP (always shown, collapsible) ── -->
-    <div class="overview-strip" id="overviewStrip">
-      <div class="overview-header">
-        <div class="overview-what-label">What is Grant AI?</div>
-        <button class="overview-toggle" id="overviewToggle" onclick="toggleOverview()">▲ Hide</button>
-      </div>
-      <div id="overviewBody" class="overview-body">
-        <div class="overview-layout">
-          <div class="overview-what">
-            <p>An AI-powered portal for ${inst?.shortName || 'NC A&T'} researchers — find funding, build proposals, and track grants through the university's 12-stage approval process. No grant experience required.</p>
-          </div>
-          <div class="overview-steps">
-            <div class="ov-step"><span class="ov-icon">🔍</span><span class="ov-label">Find Funding</span></div>
-            <span class="ov-arrow">→</span>
-            <div class="ov-step"><span class="ov-icon">📝</span><span class="ov-label">Start Your NOI</span></div>
-            <span class="ov-arrow">→</span>
-            <div class="ov-step"><span class="ov-icon">📋</span><span class="ov-label">Track Pipeline</span></div>
-            <span class="ov-arrow">→</span>
-            <div class="ov-step"><span class="ov-icon">🤖</span><span class="ov-label">Ask Grant</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- ── PROPOSAL BUILDER ── -->
     <div class="proposal-builder">
