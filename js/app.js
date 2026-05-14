@@ -53,21 +53,28 @@ function launchProposalBuilder() {
   const idea = document.getElementById('ideaInput')?.value?.trim();
   if (!idea) return;
 
-  // Keyword-match against live opportunities database for context
+  // Keyword search using actual data fields (title, program, piDept, sponsor)
   const keywords = idea.toLowerCase().split(/\s+/).filter(w => w.length > 3);
   const matches = OPPORTUNITIES_DATA.filter(o => {
-    const haystack = `${o.title} ${o.description || ''} ${o.sponsor} ${o.focus || ''}`.toLowerCase();
+    const haystack = [o.title, o.program, o.piDept, o.sponsor, o.type]
+      .filter(Boolean).join(' ').toLowerCase();
     return keywords.some(kw => haystack.includes(kw));
   }).slice(0, 6);
 
-  const oppContext = matches.length
-    ? matches.map(o => `• ${o.title} — ${o.sponsor}${o.amount ? ', $' + Number(o.amount).toLocaleString() : ''}`).join('\n')
-    : '• No exact keyword matches — suggest broadly relevant programs from USDA NIFA, NSF, NIH, or DOD.';
+  // Pre-fill NOI wizard title so it's ready when they click through
+  st.noiData = { ...st.noiData, title: idea };
 
-  const prompt = `A researcher at NC A&T CAES has this research idea:\n\n"${idea}"\n\nRelevant opportunities already in our database:\n${oppContext}\n\nPlease respond with four clearly labeled sections:\n\n**1. Funding Match** — List 3–5 specific grant programs that fit this idea. Reference the database entries above if they align, and add others you know of.\n\n**2. NOI Abstract** — Write a 150-word project abstract ready to paste into the NC A&T Notice of Intent form.\n\n**3. Compliance Needs** — Flag any IRB, IACUC, environmental, or export control reviews this project would require.\n\n**4. Submission Timeline** — Provide a 5-step countdown timeline (e.g., "10 weeks out: submit NOI…") based on a typical NC A&T grant cycle.\n\nBe specific and actionable — this researcher is ready to move forward.`;
+  // Pre-set opportunity search term
+  if (keywords.length > 0) st.oppSearch = keywords[0];
+
+  const oppContext = matches.length
+    ? matches.map(o => `• ${o.title} — ${o.sponsor}, $${Number(o.estimatedFunding || 0).toLocaleString()}, ${o.type}`).join('\n')
+    : '• No exact matches in database — recommend broadly relevant external programs';
+
+  const fullPrompt = `A researcher at NC A&T CAES has this research idea:\n\n"${idea}"\n\nRelevant opportunities already in our database:\n${oppContext}\n\nPlease respond with four clearly labeled sections:\n\n**1. Funding Match** — List 3–5 specific grant programs that fit this idea. Reference the database entries above if they align, and suggest others you know.\n\n**2. NOI Abstract** — Write a 150-word project abstract ready to paste into the NC A&T Notice of Intent form.\n\n**3. Compliance Needs** — Flag any IRB, IACUC, environmental, or export control reviews this project would require.\n\n**4. Submission Timeline** — Provide a 5-step countdown (e.g. "10 weeks out: submit NOI…") based on a typical NC A&T grant cycle.\n\nBe specific and actionable.`;
 
   document.getElementById('ideaInput').value = '';
-  handleChat(prompt);
+  handleProposalChat(idea, matches, fullPrompt);
 }
 
 // --- Dashboard ---
@@ -358,6 +365,11 @@ function render() {
   body.appendChild(renderChecklistPanel());
 
   app.appendChild(body);
+
+  // Restore speaking ring if TTS is active when DOM is rebuilt
+  requestAnimationFrame(() => {
+    if (GRANT_TTS.speaking) GRANT_TTS.updateAvatarState(true);
+  });
 }
 
 // --- Init ---

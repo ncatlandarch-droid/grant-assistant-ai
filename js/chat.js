@@ -44,10 +44,18 @@ function renderChatMessages() {
 function renderChatInput() {
   const wrap = document.createElement('div');
   wrap.className = 'chat-input-wrap';
+  const muted = GRANT_TTS.isMuted();
   wrap.innerHTML = `
     <input type="text" id="chatInput" placeholder="Ask Grant anything about grants..."
            onkeydown="if(event.key==='Enter')handleChatFromInput()">
     <button onclick="handleChatFromInput()">Send</button>
+    <button class="voice-toggle-row voice-badge" data-badge="full"
+            onclick="GRANT_TTS.toggleMute()"
+            style="background:${muted ? 'rgba(239,68,68,0.12)' : 'rgba(42,107,59,0.12)'};
+                   color:${muted ? '#ef4444' : 'var(--caes-green-mid)'};
+                   border-color:${muted ? 'rgba(239,68,68,0.3)' : 'rgba(42,107,59,0.3)'}">
+      ${muted ? '🔇  Voice Off — click to enable' : '🔊  Voice On — click to mute'}
+    </button>
   `;
   return wrap;
 }
@@ -146,6 +154,61 @@ function addMessage(role, text) {
 function formatMessage(text) {
   return text
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\[([^\]]+)\]\((\w[\w-]*)\)/g, (_, label, view) =>
+      `<button class="msg-action-btn" onclick="setView('${view}')">${label}</button>`)
     .replace(/\n/g, '<br>')
     .replace(/\((\d+)\)/g, '<br>($1)');
+}
+
+// --- Proposal Builder chat handler (separate from regular chat) ---
+async function handleProposalChat(idea, matches, fullPrompt) {
+  addMessage('user', `💡 "${idea}"`);
+  render();
+  addMessage('ai', '<div class="typing-dots"><span></span><span></span><span></span></div>');
+  render();
+
+  let response;
+  try {
+    response = await generateProposalResponse(fullPrompt);
+    if (!response) throw new Error('empty');
+  } catch (e) {
+    response = generateProposalFallback(idea, matches);
+  }
+
+  st.messages.pop();
+  addMessage('ai', response);
+  GRANT_TTS.speak(response);
+
+  // Action buttons — always shown regardless of AI success
+  const countText = matches.length ? `Found **${matches.length}** matching opportunit${matches.length === 1 ? 'y' : 'ies'} in the database. ` : '';
+  addMessage('ai', `${countText}[View Matching Opportunities](opportunities) · [Open NOI Wizard](noi-wizard)`);
+  render();
+}
+
+async function generateProposalResponse(fullPrompt) {
+  const resp = await fetch('/.netlify/functions/gemini', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'gemini-2.0-flash',
+      payload: {
+        systemInstruction: { parts: [{ text: GRANT_SYSTEM_PROMPT }] },
+        contents: [{ parts: [{ text: fullPrompt }] }],
+        generationConfig: { maxOutputTokens: 1500, temperature: 0.7 }
+      }
+    })
+  });
+  if (!resp.ok) throw new Error(`API ${resp.status}`);
+  const data = await resp.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('no text');
+  return text;
+}
+
+function generateProposalFallback(idea, matches) {
+  const oppList = matches.length
+    ? matches.map(o => `• **${o.title}** — ${o.sponsor}, $${Number(o.estimatedFunding || 0).toLocaleString()}`).join('\n')
+    : '• **USDA NIFA AFRI** — Foundational & Applied Science ($500K–$750K)\n• **NSF Research Programs** — Discipline-specific competitive funding\n• **USDA 1890 Capacity Building** — Priority access for NC A&T faculty';
+
+  return `**1. Funding Match**\n${oppList}\n\n**2. NOI Abstract (draft)**\nThis project proposes to investigate "${idea}" to advance sustainable, equitable outcomes aligned with NC A&T's 1890 Land-Grant mission. The research team will apply innovative methodologies to generate findings with direct relevance to agriculture, environmental stewardship, and community impact across the Southeast.\n\n**3. Compliance Needs**\nReview for: Human Subjects (IRB), Animal Use (IACUC), Field/Environmental Work, Export Control. Allow 4–8 weeks for any required approvals before the sponsor deadline.\n\n**4. Submission Timeline**\n- **10 weeks out:** Submit NOI to Associate Dean's office\n- **8 weeks out:** NOI approved, OSP assigns Grant Manager\n- **4 weeks out:** Full proposal in InfoEd, OSP budget review\n- **2 weeks out:** PI confirms narrative and budget\n- **By deadline:** OSP submits via Grants.gov or sponsor portal`;
 }

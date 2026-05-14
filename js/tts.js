@@ -155,10 +155,17 @@ const TTS = {
     if (wrap) wrap.classList.toggle('speaking', speaking);
   },
 
-  /** Update voice badge icon */
+  /** Update voice badge icon — handles both small icon badge and full-text toggle row */
   updateVoiceBadge() {
     document.querySelectorAll('.voice-badge').forEach(el => {
-      el.textContent = TTS.muted ? '🔇' : '🔊';
+      if (el.dataset.badge === 'full') {
+        el.textContent = TTS.muted ? '🔇  Voice Off — click to enable' : '🔊  Voice On — click to mute';
+        el.style.background   = TTS.muted ? 'rgba(239,68,68,0.12)'    : 'rgba(42,107,59,0.12)';
+        el.style.color        = TTS.muted ? '#ef4444'                  : 'var(--caes-green-mid)';
+        el.style.borderColor  = TTS.muted ? 'rgba(239,68,68,0.3)'     : 'rgba(42,107,59,0.3)';
+      } else {
+        el.textContent = TTS.muted ? '🔇' : '🔊';
+      }
     });
   }
 };

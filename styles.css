@@ -1107,6 +1107,49 @@ input, select, textarea { font-family: inherit; }
 .step-desc strong   { color: var(--text-primary); font-weight: 600; }
 
 /* ================================================================
+   VOICE TOGGLE ROW (below chat input)
+   ================================================================ */
+.voice-toggle-row {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(42,107,59,0.3);
+  background: rgba(42,107,59,0.12);
+  color: var(--caes-green-mid);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: opacity 0.2s;
+  letter-spacing: 0.01em;
+}
+.voice-toggle-row:hover { opacity: 0.8; }
+
+/* ================================================================
+   CHAT MESSAGE ACTION BUTTONS
+   ================================================================ */
+.msg-action-btn {
+  display: inline-block;
+  background: rgba(253,185,39,0.12);
+  border: 1px solid rgba(253,185,39,0.35);
+  color: var(--aggie-gold);
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 4px 6px 0 0;
+  transition: background 0.2s, transform 0.15s;
+  font-family: inherit;
+}
+.msg-action-btn:hover {
+  background: rgba(253,185,39,0.22);
+  transform: translateY(-1px);
+}
+
+/* ================================================================
    OVERVIEW STRIP (first-visit explainer, dismissible)
    ================================================================ */
 .overview-strip {
