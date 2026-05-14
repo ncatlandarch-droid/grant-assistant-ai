@@ -230,4 +230,21 @@ function saveWizardData() {
 function nextWizardStep() { saveWizardData(); st.wizardStep = (st.wizardStep || 0) + 1; render(); }
 function prevWizardStep() { saveWizardData(); st.wizardStep = Math.max(0, (st.wizardStep || 0) - 1); render(); }
 function goToWizardStep(i) { saveWizardData(); st.wizardStep = i; render(); }
-function submitNOI() { saveWizardData(); alert('NOI submitted successfully! A Grant Manager will be assigned shortly.'); st.wizardStep = 0; st.noiData = {}; setView('dashboard'); }
+async function submitNOI() {
+  saveWizardData();
+  const btn = document.querySelector('.btn-primary[onclick="submitNOI()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+
+  try {
+    await saveSubmission(st.noiData);
+    st.wizardStep = 0;
+    st.noiData = {};
+    addMessage('ai', `✅ NOI submitted and saved! Your proposal is now in the pipeline at Stage 1. A Grant Manager will be assigned after your Associate Dean approves. Track progress in the Pipeline tab.`);
+    GRANT_TTS.speak('Your NOI has been submitted and saved to the system. You can track its progress in the Pipeline tab.');
+    setView('pipeline');
+  } catch (err) {
+    console.error('NOI save failed:', err);
+    if (btn) { btn.disabled = false; btn.textContent = '📤 Submit NOI'; }
+    alert('Submission failed — please check your connection and try again.');
+  }
+}

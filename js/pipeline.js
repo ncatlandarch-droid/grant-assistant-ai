@@ -4,21 +4,30 @@
 
 function renderPipeline() {
   const el = document.createElement('div');
-  const activeOpp = st.activeOpportunity ? OPPORTUNITIES_DATA.find(o => o.id === st.activeOpportunity) : null;
 
-  // If an opportunity is active, show detail view
-  if (activeOpp) {
-    el.appendChild(renderOppDetail(activeOpp));
+  // Merge live Firestore submissions + historical mock data
+  const liveItems = (st.submissions || []);
+  const mockItems = OPPORTUNITIES_DATA.map(o => ({ ...o, isLive: false }));
+  const allItems  = [...liveItems, ...mockItems];
+
+  const activeItem = st.activeOpportunity
+    ? allItems.find(o => o.id === st.activeOpportunity)
+    : null;
+
+  if (activeItem) {
+    el.appendChild(renderOppDetail(activeItem));
     return el;
   }
 
+  const liveCount = liveItems.length;
   el.innerHTML = `
     <div class="section-header">
       <h2>📋 Grant <span>Pipeline</span></h2>
       <button class="btn btn-secondary btn-sm" onclick="setView('noi-wizard')">+ New NOI</button>
     </div>
     <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:16px">
-      Track grant proposals through the 12-stage approval process. Click any card for details.
+      Track proposals through the 12-stage approval process. Click any card for details.
+      ${liveCount > 0 ? `<span style="color:var(--caes-green-mid); font-weight:600"> · ${liveCount} live submission${liveCount !== 1 ? 's' : ''} from this tool</span>` : ''}
     </p>
   `;
 
@@ -26,30 +35,35 @@ function renderPipeline() {
   board.className = 'pipeline-board';
 
   PIPELINE_STAGES.forEach(stage => {
-    const opps = OPPORTUNITIES_DATA.filter(o => o.stage === stage.id);
+    const items = allItems.filter(o => o.stage === stage.id);
     const col = document.createElement('div');
     col.className = 'pipeline-stage';
     col.innerHTML = `
       <div class="stage-header">
         <div class="stage-dot" style="background:${stage.color}"></div>
         <span class="stage-name">${stage.short}</span>
-        <span class="stage-count">${opps.length}</span>
+        <span class="stage-count">${items.length}</span>
       </div>
     `;
 
-    opps.forEach(o => {
+    items.forEach(o => {
       const card = document.createElement('div');
       card.className = 'pipeline-card';
+      if (o.isLive) card.style.borderLeft = '3px solid var(--caes-green-mid)';
       card.onclick = () => { st.activeOpportunity = o.id; render(); };
       card.innerHTML = `
-        <div class="pipeline-card-title">${o.title.substring(0, 50)}${o.title.length > 50 ? '...' : ''}</div>
+        <div class="pipeline-card-title">
+          ${o.isLive ? '<span style="font-size:0.6rem;color:var(--caes-green-mid);font-weight:700;text-transform:uppercase;letter-spacing:0.08em">● LIVE &nbsp;</span>' : ''}
+          ${o.title.substring(0, 52)}${o.title.length > 52 ? '…' : ''}
+        </div>
         <div class="pipeline-card-meta">${o.piName} · ${o.sponsor}</div>
         <div class="pipeline-card-meta">$${(o.estimatedFunding/1000).toFixed(0)}K · ${o.type}</div>
+        ${o.isLive ? `<div style="font-size:0.65rem;color:var(--text-muted);margin-top:3px">${o.status || 'Stage ' + o.stage}</div>` : ''}
       `;
       col.appendChild(card);
     });
 
-    if (opps.length === 0) {
+    if (items.length === 0) {
       const empty = document.createElement('div');
       empty.style.cssText = 'padding:12px;text-align:center;color:var(--text-muted);font-size:0.75rem;';
       empty.textContent = 'No proposals';

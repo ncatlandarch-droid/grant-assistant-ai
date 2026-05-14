@@ -11,7 +11,13 @@
 <body>
   <div id="app"></div>
 
+  <!-- Firebase (compat CDN — must load before firebase.js) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
   <!-- Scripts (load order matters) -->
+  <script src="js/firebase.js"></script>
+  <script src="js/db.js"></script>
   <script src="js/data/institution-config.js"></script>
   <script src="js/data/opportunities-data.js"></script>
   <script src="js/data/process-ecosystem.js"></script>

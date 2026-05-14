@@ -12,7 +12,8 @@ const st = {
   oppFilters: {},
   wizardStep: 0,
   noiData: {},
-  _greeting: null
+  _greeting: null,
+  submissions: []   // live Firestore submissions
 };
 
 // --- DOM Helper ---
@@ -378,6 +379,13 @@ function initApp() {
     || "Welcome! I'm Grant, your AI Grant Assistant.";
   addMessage('ai', greeting);
   st._greeting = greeting;
+
+  // Start real-time Firestore listener — pipeline auto-updates on any change
+  listenToSubmissions(submissions => {
+    st.submissions = submissions;
+    render();
+  });
+
   render();
 }
 
