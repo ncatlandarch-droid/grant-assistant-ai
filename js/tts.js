@@ -6,6 +6,25 @@
 
 const VOICE_NAME = 'Zephyr';
 
+// Singleton AudioContext — created on first user gesture, reused forever.
+// This is required because browsers block AudioContext after async gaps.
+let _audioCtx = null;
+
+function _getAudioCtx() {
+  if (!_audioCtx || _audioCtx.state === 'closed') {
+    _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return _audioCtx;
+}
+
+// Prime the context on any user interaction so it's ready before async calls
+['click', 'keydown', 'touchstart'].forEach(evt =>
+  document.addEventListener(evt, () => {
+    const ctx = _getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+  }, { passive: true })
+);
+
 const TTS = {
   speaking: false,
   muted: localStorage.getItem('grant-tts-muted') === 'true',
@@ -36,7 +55,7 @@ const TTS = {
 
     TTS.speaking = false;
     TTS.updateAvatarState(false);
-    TTS.processQueue(); // next in queue
+    TTS.processQueue();
   },
 
   /** Call Gemini TTS proxy and play via Web Audio */
@@ -66,10 +85,12 @@ const TTS = {
     await TTS.playLiveAudio(audioPart.inlineData);
   },
 
-  /** PCM → WAV → Web Audio API playback (eliminates static) */
+  /** PCM → WAV → Web Audio API playback using singleton AudioContext */
   playLiveAudio(inlineData) {
     return new Promise(async (resolve) => {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const audioCtx = _getAudioCtx();
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+
       const raw = atob(inlineData.data);
       const pcmBytes = new Uint8Array(raw.length);
       for (let i = 0; i < raw.length; i++) pcmBytes[i] = raw.charCodeAt(i);
@@ -101,13 +122,11 @@ const TTS = {
       view.setUint32(40, dataSize, true);
       new Uint8Array(wavBuffer, 44).set(pcmBytes);
 
-      // Browser-native decoding — eliminates static
       const audioBuffer = await audioCtx.decodeAudioData(wavBuffer);
       const source = audioCtx.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(audioCtx.destination);
-
-      source.onended = () => { audioCtx.close(); resolve(); };
+      source.onended = resolve;
       source.start();
     });
   },
