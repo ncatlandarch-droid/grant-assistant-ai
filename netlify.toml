@@ -6,7 +6,11 @@
   NODE_VERSION = "18"
 
 [functions]
-  node_bundler = "esbuild"
+  node_bundler = "nft"
+
+# Deadline reminders run daily at 2pm UTC (10am Eastern / 9am Central)
+[functions."deadline-reminder"]
+  schedule = "0 14 * * *"
 
 [[headers]]
   for = "/*"

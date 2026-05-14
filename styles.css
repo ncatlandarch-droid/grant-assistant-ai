@@ -1698,6 +1698,85 @@ input, select, textarea { font-family: inherit; }
 }
 
 /* ================================================================
+   IRB PROTOCOL DRAFT
+   ================================================================ */
+
+.irb-card {
+  border-color: rgba(139, 92, 246, 0.25);
+  background: rgba(139, 92, 246, 0.03);
+}
+
+.irb-draft-body {
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+.irb-draft-body::-webkit-scrollbar { width: 4px; }
+.irb-draft-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+.irb-h1 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 16px 0 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.irb-h2 {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--aggie-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 18px 0 6px;
+  background: rgba(253,185,39,0.07);
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.irb-h3 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 12px 0 4px;
+}
+
+.irb-p {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 3px 0;
+}
+
+.irb-bullet {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  padding: 2px 0 2px 14px;
+  line-height: 1.5;
+}
+
+.irb-check {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  padding: 2px 0 2px 4px;
+}
+
+.irb-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 12px 0;
+}
+
+.irb-placeholder {
+  color: var(--aggie-gold);
+  font-style: italic;
+  background: rgba(253,185,39,0.08);
+  padding: 0 3px;
+  border-radius: 2px;
+}
+
+/* ================================================================
    RESEARCH MATCH — Document Upload
    ================================================================ */
 

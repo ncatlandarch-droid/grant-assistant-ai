@@ -85,6 +85,8 @@ function listenToSubmissions(callback) {
           solicitation:     raw.solicitation     || '',
           coPIs:            raw.coPIs            || '',
           notes:            raw.notes            || [],
+          remindersSent:    raw.remindersSent    || [],
+          irbDraft:         raw.irbDraft         || null,
           submittedAt:      raw.submittedAt,
           isLive:           true
         };
@@ -103,6 +105,10 @@ async function updateSubmissionStage(id, stage) {
 
 async function deleteSubmission(id) {
   await db.collection(SUBMISSIONS_COL).doc(id).delete();
+}
+
+async function saveIRBDraft(id, draft) {
+  await db.collection(SUBMISSIONS_COL).doc(id).update({ irbDraft: draft });
 }
 
 async function addNote(id, text, author) {

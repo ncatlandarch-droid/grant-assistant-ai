@@ -491,6 +491,11 @@ function renderMySubmissionDetail(sub) {
   });
   el.appendChild(notesCard);
 
+  // IRB section — only shown when human subjects flagged
+  if (sub.compliance?.humanSubjects) {
+    el.appendChild(renderIRBSection(sub));
+  }
+
   return el;
 }
 
@@ -613,6 +618,11 @@ function renderOppDetail(opp) {
     }
 
     el.appendChild(notesCard);
+  }
+
+  // IRB section — live submissions with human subjects flagged
+  if (opp.isLive && opp.compliance?.humanSubjects) {
+    el.appendChild(renderIRBSection(opp));
   }
 
   return el;
