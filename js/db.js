@@ -86,6 +86,7 @@ function listenToSubmissions(callback) {
           coPIs:            raw.coPIs            || '',
           notes:            raw.notes            || [],
           remindersSent:    raw.remindersSent    || [],
+          stageHistory:     raw.stageHistory     || [],
           irbDraft:         raw.irbDraft         || null,
           submittedAt:      raw.submittedAt,
           isLive:           true
@@ -95,11 +96,18 @@ function listenToSubmissions(callback) {
     });
 }
 
-async function updateSubmissionStage(id, stage) {
+async function updateSubmissionStage(id, stage, actor) {
   const clampedStage = Math.min(Math.max(stage, 1), 12);
+  const statusLabel  = STAGE_NAMES[clampedStage] || `Stage ${clampedStage}`;
   await db.collection(SUBMISSIONS_COL).doc(id).update({
-    stage:  clampedStage,
-    status: STAGE_NAMES[clampedStage] || `Stage ${clampedStage}`
+    stage:        clampedStage,
+    status:       statusLabel,
+    stageHistory: firebase.firestore.FieldValue.arrayUnion({
+      stage:  clampedStage,
+      status: statusLabel,
+      by:     actor || 'OSP',
+      ts:     new Date().toISOString()
+    })
   });
 }
 

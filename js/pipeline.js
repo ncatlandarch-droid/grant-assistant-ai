@@ -491,6 +491,11 @@ function renderMySubmissionDetail(sub) {
   });
   el.appendChild(notesCard);
 
+  // Stage history timeline
+  const histCard = renderStageHistory(sub);
+  histCard.style.marginTop = '16px';
+  el.appendChild(histCard);
+
   // IRB section — only shown when human subjects flagged
   if (sub.compliance?.humanSubjects) {
     el.appendChild(renderIRBSection(sub));
@@ -620,6 +625,13 @@ function renderOppDetail(opp) {
     el.appendChild(notesCard);
   }
 
+  // Stage history timeline (live submissions only)
+  if (opp.isLive) {
+    const histCard = renderStageHistory(opp);
+    histCard.style.marginTop = '16px';
+    el.appendChild(histCard);
+  }
+
   // IRB section — live submissions with human subjects flagged
   if (opp.isLive && opp.compliance?.humanSubjects) {
     el.appendChild(renderIRBSection(opp));
@@ -632,7 +644,8 @@ function renderOppDetail(opp) {
 
 async function advanceSubmission(id, newStage) {
   try {
-    await updateSubmissionStage(id, newStage);
+    const actor = st.currentUser?.displayName || st.currentUser?.email || 'OSP';
+    await updateSubmissionStage(id, newStage, actor);
 
     // Email the PI their stage update
     const sub = st.submissions.find(s => s.id === id);
@@ -670,6 +683,46 @@ function confirmDeleteSubmission(id) {
     console.error('Delete failed:', err);
     alert('Could not delete submission. Please try again.');
   });
+}
+
+function renderStageHistory(sub) {
+  const history = (sub.stageHistory || []).slice().reverse(); // newest first
+  const card = document.createElement('div');
+  card.className = 'card stage-history-card';
+
+  card.innerHTML = `<div class="card-title" style="margin-bottom:${history.length ? '14px' : '0'}">🕐 Stage History${history.length === 0 ? '<span style="font-size:0.78rem;font-weight:400;color:var(--text-muted);margin-left:8px">No advances recorded yet</span>' : ''}</div>`;
+
+  if (history.length === 0) return card;
+
+  const list = document.createElement('div');
+  list.className = 'stage-history-list';
+
+  history.forEach((entry, i) => {
+    const stageObj = PIPELINE_STAGES.find(p => p.id === entry.stage);
+    const date     = entry.ts ? new Date(entry.ts) : null;
+    const dateStr  = date
+      ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+        ' at ' + date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+      : '';
+
+    const row = document.createElement('div');
+    row.className = 'stage-history-entry';
+    row.innerHTML = `
+      <div class="stage-history-dot" style="background:${stageObj?.color || 'var(--aggie-gold)'}"></div>
+      ${i < history.length - 1 ? '<div class="stage-history-line"></div>' : ''}
+      <div class="stage-history-body">
+        <div class="stage-history-label">
+          <span class="stage-history-num">Stage ${entry.stage}</span>
+          <span class="stage-history-name">${entry.status || stageObj?.name || ''}</span>
+        </div>
+        <div class="stage-history-meta">${dateStr}${entry.by ? ' · ' + entry.by : ''}</div>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+
+  card.appendChild(list);
+  return card;
 }
 
 function getDaysRemaining(deadline) {

@@ -249,52 +249,60 @@ function renderResources() {
         <span class="how-to-icon">🎓</span>
         <div>
           <div class="how-to-title">How to Use Grant AI</div>
-          <div class="how-to-sub">A step-by-step guide for NC A&T researchers and staff</div>
+          <div class="how-to-sub">Start with the dialogue box on the left — everything flows from there</div>
         </div>
       </div>
       <div class="how-to-steps">
-        <div class="how-to-step">
-          <div class="step-num">1</div>
+
+        <div class="how-to-step" style="background:rgba(253,185,39,0.05);border:1px solid rgba(253,185,39,0.2);border-radius:10px;padding:16px 16px 16px 0;margin-bottom:4px">
+          <div class="step-num" style="background:var(--aggie-gold);color:#1a0e00">1</div>
           <div class="step-body">
-            <div class="step-title">Meet Grant — Your AI Voice Coach</div>
-            <div class="step-desc">Grant speaks every response aloud using a realistic AI voice. Click his photo to hear him speak, or click the 🔊 badge to toggle voice on/off. Voice works automatically — no setup required.</div>
+            <div class="step-title" style="color:var(--aggie-gold)">Start Here — The Dialogue Box</div>
+            <div class="step-desc">The chat input at the bottom left <strong>is your entry point to everything.</strong> Type your research idea, a question about grants, a funder name, a compliance question — anything. As soon as you type and press Enter, Grant responds and the experience begins.<br><br>
+            <em>Try: "I want to study digital twins for landscape architecture conservation planning" — Grant will find matching opportunities, draft your NOI abstract, flag compliance needs, and build your submission timeline.</em></div>
           </div>
         </div>
+
         <div class="how-to-step">
           <div class="step-num">2</div>
           <div class="step-body">
-            <div class="step-title">Find Funding Opportunities</div>
-            <div class="step-desc">Go to <strong>Opportunities</strong> to search and filter 230+ grant opportunities already loaded for NC A&T. Filter by sponsor (USDA, NSF, NIH), type (Capacity vs. Competitive), or PI name. Or ask Grant directly: <em>"What USDA grants are available for food systems research?"</em></div>
+            <div class="step-title">Find Funding by Keyword</div>
+            <div class="step-desc">Go to <strong>Opportunities</strong> and type any keyword into the search bar — PI name, department, topic, sponsor, or program. The search looks across every field at once, so "landscape architecture USDA" returns all relevant records. You can also just ask Grant: <em>"What USDA grants are available for food systems research?"</em> — he'll search and explain at the same time.</div>
           </div>
         </div>
+
         <div class="how-to-step">
           <div class="step-num">3</div>
           <div class="step-body">
-            <div class="step-title">Start a Notice of Intent (NOI)</div>
-            <div class="step-desc">Click <strong>NOI Wizard</strong> and follow the 6-step form. The NOI must be submitted to your Associate Dean for Research <strong>at least 8–10 weeks</strong> before the sponsor deadline. Once approved, OSP assigns you a Grant Manager.</div>
+            <div class="step-title">Submit a Notice of Intent (NOI)</div>
+            <div class="step-desc">Click <strong>NOI Wizard</strong> and follow the 6-step form. The NOI must be submitted to your Associate Dean for Research <strong>at least 8–10 weeks</strong> before the sponsor deadline. Once approved, OSP assigns you a Grant Manager. Use <strong>Research Match</strong> to upload your abstract and auto-fill the NOI from your own document.</div>
           </div>
         </div>
+
         <div class="how-to-step">
           <div class="step-num">4</div>
           <div class="step-body">
-            <div class="step-title">Track Your Pipeline</div>
-            <div class="step-desc">The <strong>Pipeline</strong> board shows all active proposals across NC A&T's 12-stage approval process — from NOI through final submission. Click any card for full details and compliance status.</div>
+            <div class="step-title">Track Your Proposal Through the Pipeline</div>
+            <div class="step-desc">The <strong>Pipeline</strong> board shows every proposal across NC A&T's 12-stage approval process — from NOI submission through sponsor award. Sign in with Google to see only your proposals. OSP admins advance stages and leave notes you can read in real time.</div>
           </div>
         </div>
+
         <div class="how-to-step">
           <div class="step-num">5</div>
           <div class="step-body">
-            <div class="step-title">Ask Grant Anything</div>
-            <div class="step-desc">Use the chat panel on the left to ask Grant specific questions: budget calculations, IDC rates, compliance timelines, narrative tips, funder requirements, and more. Switch modes (Coach / Budget / Compliance / Writing) to focus the AI on your current task.</div>
+            <div class="step-title">Switch Grant's Mode for Focused Help</div>
+            <div class="step-desc">Use the mode chips above the chat to focus Grant on a specific task: <strong>Coach</strong> for general guidance, <strong>Budget</strong> for IDC rates and cost calculations, <strong>Compliance</strong> for IRB/IACUC/export control questions, <strong>Writing</strong> for narrative tips and abstract drafts. Grant also speaks every response aloud — click 🔊 to toggle voice.</div>
           </div>
         </div>
+
         <div class="how-to-step">
           <div class="step-num">6</div>
           <div class="step-body">
-            <div class="step-title">Open Portals Directly</div>
-            <div class="step-desc">Use the portal links below to open Grants.gov, NSF Research.gov, NIH eRA Commons, USDA NIFA, and NC A&T OSP in a new tab. All federal proposals ultimately submit through these portals — OSP submits on your behalf after your proposal is complete in InfoEd.</div>
+            <div class="step-title">Submit Through Federal Portals</div>
+            <div class="step-desc">Use the portal links below to open Grants.gov, NSF Research.gov, NIH eRA Commons, and USDA NIFA directly. All federal proposals ultimately go through these portals — OSP submits on your behalf after your proposal clears all 12 internal stages in InfoEd.</div>
           </div>
         </div>
+
       </div>
     </div>
 

@@ -1777,6 +1777,84 @@ input, select, textarea { font-family: inherit; }
 }
 
 /* ================================================================
+   STAGE HISTORY TIMELINE
+   ================================================================ */
+
+.stage-history-card {
+  border-color: rgba(255,255,255,0.06);
+}
+
+.stage-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.stage-history-entry {
+  display: grid;
+  grid-template-columns: 12px 1px 1fr;
+  gap: 0 12px;
+  position: relative;
+  padding-bottom: 16px;
+}
+
+.stage-history-entry:last-child {
+  padding-bottom: 0;
+}
+
+.stage-history-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-top: 3px;
+  flex-shrink: 0;
+  grid-column: 1;
+  grid-row: 1;
+  box-shadow: 0 0 6px currentColor;
+}
+
+.stage-history-line {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  width: 1px;
+  background: var(--border);
+  margin: 16px auto 0;
+  align-self: stretch;
+}
+
+.stage-history-body {
+  grid-column: 3;
+  grid-row: 1;
+  padding-top: 1px;
+}
+
+.stage-history-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.stage-history-num {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.stage-history-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stage-history-meta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* ================================================================
    RESEARCH MATCH — Document Upload
    ================================================================ */
 

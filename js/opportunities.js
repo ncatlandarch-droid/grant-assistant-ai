@@ -4,8 +4,9 @@
 
 function renderOpportunities() {
   const el = document.createElement('div');
-  const stats = computeOppStats();
+  const stats    = computeOppStats();
   const filtered = filterOpportunities();
+  const hasSearch = !!(st.oppSearch || st.oppFilters?.sponsor || st.oppFilters?.type);
 
   el.innerHTML = `
     <div class="section-header">
@@ -13,42 +14,37 @@ function renderOpportunities() {
       <span class="badge badge-info">${filtered.length} of ${stats.total} shown</span>
     </div>
 
-    <div class="dashboard-grid" style="margin-bottom:20px">
-      <div class="stat-card">
-        <div class="stat-value">${stats.total}</div>
-        <div class="stat-label">Total NOIs</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">$${(stats.totalFunding / 1000000).toFixed(1)}M</div>
-        <div class="stat-label">Total Requested</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">${Object.keys(stats.bySponsor).length}</div>
-        <div class="stat-label">Sponsors</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">${stats.byStage[12] || 0}</div>
-        <div class="stat-label">Submitted</div>
-      </div>
+    <div class="search-bar" style="margin-bottom:${hasSearch ? '16px' : '20px'}">
+      <input type="text" id="oppSearch" placeholder="Search by keyword, PI, department, sponsor, title…"
+             value="${st.oppSearch || ''}" oninput="updateOppSearch(this.value)" autocomplete="off">
+      ${hasSearch ? `<button class="btn btn-secondary btn-sm" onclick="clearOppSearch()" style="white-space:nowrap">✕ Clear</button>` : ''}
     </div>
 
-    <div class="search-bar">
-      <input type="text" id="oppSearch" placeholder="Search by PI, title, sponsor..."
-             value="${st.oppSearch || ''}" oninput="updateOppSearch(this.value)">
-      <select id="oppSponsorFilter" onchange="updateOppFilter('sponsor', this.value)">
-        <option value="">All Sponsors</option>
-        ${[...new Set(OPPORTUNITIES_DATA.map(o => o.sponsor))].sort().map(s =>
-          `<option value="${s}" ${st.oppFilters?.sponsor === s ? 'selected' : ''}>${s}</option>`
-        ).join('')}
-      </select>
-      <select id="oppTypeFilter" onchange="updateOppFilter('type', this.value)">
-        <option value="">All Types</option>
-        <option value="Capacity" ${st.oppFilters?.type === 'Capacity' ? 'selected' : ''}>Capacity</option>
-        <option value="Competitive" ${st.oppFilters?.type === 'Competitive' ? 'selected' : ''}>Competitive</option>
-        <option value="Contract" ${st.oppFilters?.type === 'Contract' ? 'selected' : ''}>Contract</option>
-        <option value="Cooperative" ${st.oppFilters?.type === 'Cooperative' ? 'selected' : ''}>Cooperative</option>
-      </select>
-    </div>
+    ${hasSearch
+      ? `<p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px">
+           ${filtered.length === 0
+             ? '⚠️ No results match your search.'
+             : `<span style="color:var(--caes-green-mid);font-weight:600">${filtered.length} result${filtered.length !== 1 ? 's' : ''}</span> matching "${st.oppSearch || ''}"`}
+         </p>`
+      : `<div class="dashboard-grid" style="margin-bottom:20px">
+           <div class="stat-card">
+             <div class="stat-value">${stats.total}</div>
+             <div class="stat-label">Total NOIs</div>
+           </div>
+           <div class="stat-card">
+             <div class="stat-value">$${(stats.totalFunding / 1000000).toFixed(1)}M</div>
+             <div class="stat-label">Total Requested</div>
+           </div>
+           <div class="stat-card">
+             <div class="stat-value">${Object.keys(stats.bySponsor).length}</div>
+             <div class="stat-label">Sponsors</div>
+           </div>
+           <div class="stat-card">
+             <div class="stat-value">${stats.byStage[12] || 0}</div>
+             <div class="stat-label">Submitted</div>
+           </div>
+         </div>`
+    }
 
     <div class="opp-table-wrap">
       <table class="opp-table">
@@ -65,18 +61,20 @@ function renderOpportunities() {
           </tr>
         </thead>
         <tbody>
-          ${filtered.map(o => `
-            <tr>
-              <td>${formatDate(o.noiDate)}</td>
-              <td><strong>${o.piName}</strong><br><span style="font-size:0.7rem;color:var(--text-muted)">${o.piDept}</span></td>
-              <td>${o.sponsor}</td>
-              <td style="max-width:250px">${o.title}</td>
-              <td><span class="badge ${o.type === 'Capacity' ? 'badge-info' : 'badge-warning'}">${o.type}</span></td>
-              <td>$${(o.estimatedFunding/1000).toFixed(0)}K</td>
-              <td><span class="badge ${getStageBadge(o.stage)}">${PIPELINE_STAGES.find(s => s.id === o.stage)?.short || '?'}</span></td>
-              <td><button class="btn btn-sm btn-primary" onclick="viewOpportunity('${o.id}')">View</button></td>
-            </tr>
-          `).join('')}
+          ${filtered.length === 0
+            ? `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted)">No matching records. Try broader keywords.</td></tr>`
+            : filtered.map(o => `
+              <tr>
+                <td>${formatDate(o.noiDate)}</td>
+                <td><strong>${o.piName}</strong><br><span style="font-size:0.7rem;color:var(--text-muted)">${o.piDept}</span></td>
+                <td>${o.sponsor}</td>
+                <td style="max-width:250px">${o.title}</td>
+                <td><span class="badge ${o.type === 'Capacity' ? 'badge-info' : 'badge-warning'}">${o.type}</span></td>
+                <td>$${(o.estimatedFunding/1000).toFixed(0)}K</td>
+                <td><span class="badge ${getStageBadge(o.stage)}">${PIPELINE_STAGES.find(s => s.id === o.stage)?.short || '?'}</span></td>
+                <td><button class="btn btn-sm btn-primary" onclick="viewOpportunity('${o.id}')">View</button></td>
+              </tr>`).join('')
+          }
         </tbody>
       </table>
     </div>
@@ -86,24 +84,31 @@ function renderOpportunities() {
 
 function filterOpportunities() {
   let data = [...OPPORTUNITIES_DATA];
+
   if (st.oppSearch) {
-    const q = st.oppSearch.toLowerCase();
-    data = data.filter(o =>
-      o.piName.toLowerCase().includes(q) ||
-      o.title.toLowerCase().includes(q) ||
-      o.sponsor.toLowerCase().includes(q) ||
-      o.piDept.toLowerCase().includes(q)
-    );
+    // Split query into individual words so "Landscape Architecture digital twins"
+    // matches records where each word appears anywhere across all searchable fields.
+    const terms = st.oppSearch.toLowerCase().split(/\s+/).filter(Boolean);
+    data = data.filter(o => {
+      const haystack = [
+        o.piName, o.piDept, o.title, o.sponsor,
+        o.program || '', o.piCollege || '',
+        (o.subInstitutions || []).join(' ')
+      ].join(' ').toLowerCase();
+      return terms.every(t => haystack.includes(t));
+    });
   }
+
   if (st.oppFilters?.sponsor) data = data.filter(o => o.sponsor === st.oppFilters.sponsor);
-  if (st.oppFilters?.type) data = data.filter(o => o.type === st.oppFilters.type);
+  if (st.oppFilters?.type)    data = data.filter(o => o.type    === st.oppFilters.type);
   return data;
 }
 
 function updateOppSearch(val) { st.oppSearch = val; render(); }
-function updateOppFilter(key, val) {
-  if (!st.oppFilters) st.oppFilters = {};
-  st.oppFilters[key] = val;
+
+function clearOppSearch() {
+  st.oppSearch  = '';
+  st.oppFilters = {};
   render();
 }
 

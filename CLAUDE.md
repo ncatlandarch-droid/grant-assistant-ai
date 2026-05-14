@@ -68,8 +68,12 @@ netlify/
     gemini.js                       — Chat proxy — keeps GEMINI_API_KEY server-side
     gemini-tts.js                   — TTS proxy
     analyze-doc.js                  — Document analysis — PDF/text → Gemini → structured JSON
+    generate-irb.js                 — IRB protocol draft generator — 13-section outline via Gemini
     send-email.js                   — Resend email: submission confirm, admin alert, stage advance
-netlify.toml                        — NODE_VERSION=18, esbuild bundler, publish="."
+    deadline-reminder/
+      index.js                      — Scheduled function (daily 2pm UTC) — 14/7-day deadline emails
+      package.json                  — { firebase-admin: ^11.11.0 } — own package so nft can bundle it
+netlify.toml                        — NODE_VERSION=18, node_bundler=nft, publish=".", schedule for deadline-reminder
 ```
 
 ---
@@ -154,10 +158,11 @@ sendEmail('stage_advance', { piEmail, title, stage, sponsor, estimatedFunding })
 
 ### Adding to Firestore
 ```javascript
-await saveSubmission(data);                      // new NOI
-await updateSubmissionStage(id, newStage);       // advance stage
-await addNote(id, text, authorName);             // append note (arrayUnion)
-await deleteSubmission(id);                      // remove document
+await saveSubmission(data);                          // new NOI
+await updateSubmissionStage(id, newStage, actor);    // advance stage + appends stageHistory entry
+await addNote(id, text, authorName);                 // append note (arrayUnion)
+await saveIRBDraft(id, markdownText);                // save or clear IRB draft
+await deleteSubmission(id);                          // remove document
 ```
 
 ---
@@ -166,10 +171,13 @@ await deleteSubmission(id);                      // remove document
 
 | Variable | Purpose |
 |---|---|
-| `GEMINI_API_KEY` | Google Gemini API — chat, TTS, document analysis |
+| `GEMINI_API_KEY` | Google Gemini API — chat, TTS, document analysis, IRB generation |
 | `RESEND_API_KEY` | Resend transactional email |
-| `ADMIN_EMAIL` | Who receives new submission alerts (default: ncatlandarch@gmail.com) |
+| `ADMIN_EMAIL` | Who receives new submission + 7-day deadline alerts (default: ncatlandarch@gmail.com) |
 | `FROM_EMAIL` | Sender address (default: onboarding@resend.dev) |
+| `FIREBASE_PROJECT_ID` | Firebase project ID — required for deadline-reminder scheduled function |
+| `FIREBASE_CLIENT_EMAIL` | Firebase service account client email — required for deadline-reminder |
+| `FIREBASE_PRIVATE_KEY` | Firebase service account private key (with literal `\n`, Netlify stores as `\\n`) |
 
 ---
 
@@ -188,9 +196,10 @@ await deleteSubmission(id);                      // remove document
    - Enable Authentication → Google provider
    - Copy config into `js/firebase.js`
 5. **Create Netlify site** from forked GitHub repo
-6. **Set environment variables** in Netlify dashboard (4 vars above)
+6. **Set environment variables** in Netlify dashboard (7 vars — see table above)
 7. **Add Netlify domain** to Firebase Auth → Settings → Authorized Domains
-8. **Push** — auto-deploys in ~60 seconds
+8. **For deadline reminders**: Firebase Console → Project Settings → Service Accounts → Generate new private key → use values for `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`
+9. **Push** — auto-deploys in ~60 seconds
 
 That's it. The new college has a fully working grant management AI.
 
@@ -208,13 +217,29 @@ That's it. The new college has a fully working grant management AI.
 8. Admin notes — OSP adds notes to submissions, PI sees them
 9. Research Match — PDF/text upload → Gemini multimodal → opportunity matching → pre-filled NOI
 10. Admin table view — sortable/filterable table, stats bar, CSV export
+11. Deadline reminder emails — Netlify scheduled function (daily 2pm UTC), 14/7-day PI emails + 7-day admin alert, `remindersSent[]` prevents duplicates, Firebase Admin SDK for server-side Firestore
+12. IRB draft generator — Gemini generates 13-section IRB protocol outline, markdown → styled HTML, copy / PDF / regenerate, saves to Firestore, auto-appears when `compliance.humanSubjects === true`
+13. Stage history log — every `advanceSubmission()` call appends `{ stage, status, by, ts }` to `stageHistory[]` via arrayUnion; timeline card shows on all detail views
+
+---
+
+## Firestore — submissions document fields (complete)
+```
+submittedAt, stage, status, piName, piEmail, piDept, piCollege, coPIs,
+sponsor, program, solicitation, deadline, type, title, summary,
+estimatedFunding, duration, subrec, subInst, costShare, costShareAmt,
+effort, budgetNotes,
+compliance: { humanSubjects, animals, radioactive, biohazard, exportCtrl, coi },
+notes: [{ text, author, ts }],           ← arrayUnion appended by addNote()
+remindersSent: ['14day', '7day'],         ← arrayUnion appended by deadline-reminder
+stageHistory: [{ stage, status, by, ts }], ← arrayUnion appended by updateSubmissionStage()
+irbDraft: string | null                  ← set by saveIRBDraft()
+```
 
 ---
 
 ## What's Next (Roadmap)
 
-- **Deadline reminder emails** — Netlify scheduled function, 14 and 7 days before deadline
-- **Stage history log** — timestamp every advance, visible on detail view
-- **IRB draft generator** — when human subjects flagged, Gemini drafts an IRB protocol outline
 - **Better semantic search** — embeddings-based opportunity matching (beyond keyword overlap)
 - **Interfolio / Banner integration** — connect to existing university systems
+- **Auto-compliance detection** — detect IRB/IACUC flags automatically from abstract text

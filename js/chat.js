@@ -45,7 +45,7 @@ function renderChatInput() {
   const wrap = document.createElement('div');
   wrap.className = 'chat-input-wrap';
   wrap.innerHTML = `
-    <input type="text" id="chatInput" placeholder="Ask Grant anything about grants..."
+    <input type="text" id="chatInput" placeholder="Describe your research idea or ask a question…"
            onkeydown="if(event.key==='Enter')handleChatFromInput()">
     <button onclick="handleChatFromInput()">Send</button>
   `;
