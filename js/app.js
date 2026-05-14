@@ -38,14 +38,65 @@ function setView(view) {
   render();
 }
 
+// --- Overview strip (first-visit, dismissible) ---
+function dismissOverview() {
+  localStorage.setItem('grant-intro-seen', 'true');
+  const strip = document.getElementById('overviewStrip');
+  if (strip) strip.style.display = 'none';
+}
+
+// --- Proposal Builder ---
+function launchProposalBuilder() {
+  const idea = document.getElementById('ideaInput')?.value?.trim();
+  if (!idea) return;
+  const prompt = `I have a research idea I'd like to develop into a grant proposal:\n\n"${idea}"\n\nPlease help me by:\n1. Matching this to 3–5 specific funding opportunities\n2. Drafting a 150-word NOI abstract for this project\n3. Identifying any compliance reviews needed (IRB, IACUC, etc.)\n4. Suggesting a submission timeline based on typical NC A&T deadlines`;
+  document.getElementById('ideaInput').value = '';
+  handleChat(prompt);
+}
+
 // --- Dashboard ---
 function renderDashboard() {
   const el = document.createElement('div');
   const stats = computeOppStats();
   const active = OPPORTUNITIES_DATA.filter(o => o.stage < 12);
   const inst = window.INSTITUTION_CONFIG?.institution;
+  const seenIntro = localStorage.getItem('grant-intro-seen') === 'true';
 
   el.innerHTML = `
+
+    <!-- ── OVERVIEW STRIP (first-visit only) ── -->
+    ${!seenIntro ? `
+    <div class="overview-strip" id="overviewStrip">
+      <button class="overview-dismiss" onclick="dismissOverview()" aria-label="Dismiss">✕</button>
+      <div class="overview-what">
+        <div class="overview-what-label">What is Grant AI?</div>
+        <p>An AI-powered portal for ${inst?.shortName || 'NC A&T'} researchers — find funding, build proposals, and track grants through the university's 12-stage approval process. No experience required.</p>
+      </div>
+      <div class="overview-steps">
+        <div class="ov-step"><span class="ov-icon">🔍</span><span class="ov-label">Find Funding</span></div>
+        <span class="ov-arrow">→</span>
+        <div class="ov-step"><span class="ov-icon">📝</span><span class="ov-label">Start Your NOI</span></div>
+        <span class="ov-arrow">→</span>
+        <div class="ov-step"><span class="ov-icon">📋</span><span class="ov-label">Track Pipeline</span></div>
+        <span class="ov-arrow">→</span>
+        <div class="ov-step"><span class="ov-icon">🤖</span><span class="ov-label">Ask Grant</span></div>
+      </div>
+    </div>` : ''}
+
+    <!-- ── PROPOSAL BUILDER ── -->
+    <div class="proposal-builder">
+      <div class="pb-icon">💡</div>
+      <div class="pb-content">
+        <div class="pb-title">Describe your research idea</div>
+        <div class="pb-sub">Grant will match funding opportunities, draft your NOI abstract, flag compliance needs, and build your submission timeline — instantly.</div>
+        <div class="pb-input-wrap">
+          <textarea id="ideaInput" class="pb-input" rows="2"
+            placeholder="e.g. I want to study the impact of cover crops on soil carbon sequestration in small farms across the Southeast..."></textarea>
+          <button class="pb-btn" onclick="launchProposalBuilder()">Get Matched →</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Welcome Banner -->
     <div class="welcome-banner">
       <div class="welcome-banner-inner">
