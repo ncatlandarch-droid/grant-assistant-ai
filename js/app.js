@@ -38,18 +38,34 @@ function setView(view) {
   render();
 }
 
-// --- Overview strip (first-visit, dismissible) ---
-function dismissOverview() {
-  localStorage.setItem('grant-intro-seen', 'true');
-  const strip = document.getElementById('overviewStrip');
-  if (strip) strip.style.display = 'none';
+// --- Overview strip (collapsible, no permanent storage) ---
+function toggleOverview() {
+  const body = document.getElementById('overviewBody');
+  const btn  = document.getElementById('overviewToggle');
+  if (!body) return;
+  const collapsed = body.style.display === 'none';
+  body.style.display = collapsed ? '' : 'none';
+  btn.textContent   = collapsed ? '▲ Hide' : '▼ Show';
 }
 
 // --- Proposal Builder ---
 function launchProposalBuilder() {
   const idea = document.getElementById('ideaInput')?.value?.trim();
   if (!idea) return;
-  const prompt = `I have a research idea I'd like to develop into a grant proposal:\n\n"${idea}"\n\nPlease help me by:\n1. Matching this to 3–5 specific funding opportunities\n2. Drafting a 150-word NOI abstract for this project\n3. Identifying any compliance reviews needed (IRB, IACUC, etc.)\n4. Suggesting a submission timeline based on typical NC A&T deadlines`;
+
+  // Keyword-match against live opportunities database for context
+  const keywords = idea.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+  const matches = OPPORTUNITIES_DATA.filter(o => {
+    const haystack = `${o.title} ${o.description || ''} ${o.sponsor} ${o.focus || ''}`.toLowerCase();
+    return keywords.some(kw => haystack.includes(kw));
+  }).slice(0, 6);
+
+  const oppContext = matches.length
+    ? matches.map(o => `• ${o.title} — ${o.sponsor}${o.amount ? ', $' + Number(o.amount).toLocaleString() : ''}`).join('\n')
+    : '• No exact keyword matches — suggest broadly relevant programs from USDA NIFA, NSF, NIH, or DOD.';
+
+  const prompt = `A researcher at NC A&T CAES has this research idea:\n\n"${idea}"\n\nRelevant opportunities already in our database:\n${oppContext}\n\nPlease respond with four clearly labeled sections:\n\n**1. Funding Match** — List 3–5 specific grant programs that fit this idea. Reference the database entries above if they align, and add others you know of.\n\n**2. NOI Abstract** — Write a 150-word project abstract ready to paste into the NC A&T Notice of Intent form.\n\n**3. Compliance Needs** — Flag any IRB, IACUC, environmental, or export control reviews this project would require.\n\n**4. Submission Timeline** — Provide a 5-step countdown timeline (e.g., "10 weeks out: submit NOI…") based on a typical NC A&T grant cycle.\n\nBe specific and actionable — this researcher is ready to move forward.`;
+
   document.getElementById('ideaInput').value = '';
   handleChat(prompt);
 }
@@ -60,28 +76,31 @@ function renderDashboard() {
   const stats = computeOppStats();
   const active = OPPORTUNITIES_DATA.filter(o => o.stage < 12);
   const inst = window.INSTITUTION_CONFIG?.institution;
-  const seenIntro = localStorage.getItem('grant-intro-seen') === 'true';
-
   el.innerHTML = `
 
-    <!-- ── OVERVIEW STRIP (first-visit only) ── -->
-    ${!seenIntro ? `
+    <!-- ── OVERVIEW STRIP (always shown, collapsible) ── -->
     <div class="overview-strip" id="overviewStrip">
-      <button class="overview-dismiss" onclick="dismissOverview()" aria-label="Dismiss">✕</button>
-      <div class="overview-what">
+      <div class="overview-header">
         <div class="overview-what-label">What is Grant AI?</div>
-        <p>An AI-powered portal for ${inst?.shortName || 'NC A&T'} researchers — find funding, build proposals, and track grants through the university's 12-stage approval process. No experience required.</p>
+        <button class="overview-toggle" id="overviewToggle" onclick="toggleOverview()">▲ Hide</button>
       </div>
-      <div class="overview-steps">
-        <div class="ov-step"><span class="ov-icon">🔍</span><span class="ov-label">Find Funding</span></div>
-        <span class="ov-arrow">→</span>
-        <div class="ov-step"><span class="ov-icon">📝</span><span class="ov-label">Start Your NOI</span></div>
-        <span class="ov-arrow">→</span>
-        <div class="ov-step"><span class="ov-icon">📋</span><span class="ov-label">Track Pipeline</span></div>
-        <span class="ov-arrow">→</span>
-        <div class="ov-step"><span class="ov-icon">🤖</span><span class="ov-label">Ask Grant</span></div>
+      <div id="overviewBody" class="overview-body">
+        <div class="overview-layout">
+          <div class="overview-what">
+            <p>An AI-powered portal for ${inst?.shortName || 'NC A&T'} researchers — find funding, build proposals, and track grants through the university's 12-stage approval process. No grant experience required.</p>
+          </div>
+          <div class="overview-steps">
+            <div class="ov-step"><span class="ov-icon">🔍</span><span class="ov-label">Find Funding</span></div>
+            <span class="ov-arrow">→</span>
+            <div class="ov-step"><span class="ov-icon">📝</span><span class="ov-label">Start Your NOI</span></div>
+            <span class="ov-arrow">→</span>
+            <div class="ov-step"><span class="ov-icon">📋</span><span class="ov-label">Track Pipeline</span></div>
+            <span class="ov-arrow">→</span>
+            <div class="ov-step"><span class="ov-icon">🤖</span><span class="ov-label">Ask Grant</span></div>
+          </div>
+        </div>
       </div>
-    </div>` : ''}
+    </div>
 
     <!-- ── PROPOSAL BUILDER ── -->
     <div class="proposal-builder">
