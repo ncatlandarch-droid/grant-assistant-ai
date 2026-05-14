@@ -5,8 +5,13 @@
 function renderPipeline() {
   const el = document.createElement('div');
 
-  // Signed-in PI (non-admin) sees only their own proposals
+  // Signed-in PI (non-admin) — personal portal
   if (st.currentUser && !st.isAdmin) {
+    if (st.activeOpportunity) {
+      const sub = st.submissions.find(s => s.id === st.activeOpportunity);
+      if (sub) { el.appendChild(renderMySubmissionDetail(sub)); return el; }
+      st.activeOpportunity = null; // stale id — fall through to list
+    }
     el.appendChild(renderMySubmissions());
     return el;
   }
@@ -129,6 +134,10 @@ function renderMySubmissions() {
     const stage = PIPELINE_STAGES.find(s => s.id === sub.stage);
     const card  = document.createElement('div');
     card.className = 'my-proposal-card';
+    card.style.cursor = 'pointer';
+    card.onclick = () => { st.activeOpportunity = sub.id; render(); };
+
+    const hasNotes = sub.notes?.length > 0;
 
     card.innerHTML = `
       <div class="my-proposal-header">
@@ -153,14 +162,121 @@ function renderMySubmissions() {
       </div>
 
       <div class="my-proposal-footer">
-        <span style="color:var(--text-muted);font-size:0.75rem">${pct}% through review process</span>
-        ${sub.deadline ? `<span style="color:var(--text-muted);font-size:0.75rem">${getDaysRemaining(sub.deadline)}</span>` : ''}
+        <span style="color:var(--text-muted);font-size:0.75rem">${pct}% through review process${hasNotes ? ` · <span style="color:var(--aggie-gold)">💬 ${sub.notes.length} note${sub.notes.length !== 1 ? 's' : ''} from OSP</span>` : ''}</span>
+        <span style="color:var(--text-muted);font-size:0.75rem">${sub.deadline ? getDaysRemaining(sub.deadline) : ''}</span>
       </div>
+      <div style="font-size:0.72rem;color:var(--text-muted);margin-top:8px;text-align:right">View details →</div>
     `;
     list.appendChild(card);
   });
 
   el.appendChild(list);
+  return el;
+}
+
+function renderMySubmissionDetail(sub) {
+  const stage = PIPELINE_STAGES.find(s => s.id === sub.stage);
+  const pct   = Math.round((sub.stage / 12) * 100);
+  const c     = sub.compliance || {};
+
+  const el = document.createElement('div');
+
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <button class="btn btn-secondary btn-sm" onclick="st.activeOpportunity=null; render();">← My Proposals</button>
+      <button class="btn btn-primary btn-sm" onclick="exportNOIPdf(st.submissions.find(s=>s.id==='${sub.id}'))">📄 Export PDF</button>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 style="font-size:1.15rem;font-weight:800;color:var(--text-primary);margin-bottom:4px">${sub.title}</h2>
+      <div style="color:var(--text-secondary);font-size:0.83rem;margin-bottom:14px">${sub.sponsor}${sub.program ? ' · ' + sub.program : ''}</div>
+
+      <div class="my-proposal-stage-row" style="margin-bottom:8px">
+        <span class="my-proposal-stage-label">Stage ${sub.stage} of 12</span>
+        <span class="my-proposal-stage-name" style="color:${stage?.color || 'var(--caes-green-mid)'}">● ${sub.status || stage?.name || ''}</span>
+      </div>
+      <div class="my-proposal-progress-track" style="margin-bottom:6px">
+        ${PIPELINE_STAGES.map(s => `
+          <div class="my-proposal-pip ${s.id <= sub.stage ? 'active' : ''}"
+               style="${s.id <= sub.stage ? 'background:' + stage?.color : ''}"
+               title="Stage ${s.id}: ${s.name}"></div>
+        `).join('')}
+      </div>
+      <div style="color:var(--text-muted);font-size:0.75rem;margin-bottom:10px">${pct}% through the review process</div>
+
+      ${stage?.desc ? `<div style="background:rgba(255,255,255,0.04);border-left:3px solid ${stage.color};padding:10px 14px;border-radius:0 6px 6px 0;font-size:0.83rem;color:var(--text-secondary);line-height:1.55">${stage.desc}</div>` : ''}
+    </div>
+
+    <div class="dashboard-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:16px">
+      <div class="card">
+        <div class="card-subtitle">Funding</div>
+        <div class="card-title" style="color:var(--aggie-gold)">$${Number(sub.estimatedFunding).toLocaleString()}</div>
+        <div style="font-size:0.8rem;color:var(--text-secondary)">${sub.duration}</div>
+      </div>
+      <div class="card">
+        <div class="card-subtitle">Deadline</div>
+        <div class="card-title">${sub.deadline ? new Date(sub.deadline).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : 'Not set'}</div>
+        <div style="font-size:0.8rem;color:var(--text-secondary)">${getDaysRemaining(sub.deadline)}</div>
+      </div>
+      <div class="card">
+        <div class="card-subtitle">Type</div>
+        <div class="card-title">${sub.type}</div>
+        <div style="font-size:0.8rem;color:var(--text-secondary)">IDC: ${sub.type === 'Capacity' ? '0' : '48'}%</div>
+      </div>
+      <div class="card">
+        <div class="card-subtitle">PI</div>
+        <div class="card-title" style="font-size:0.95rem">${sub.piName}</div>
+        <div style="font-size:0.78rem;color:var(--text-secondary)">${sub.piDept}</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title" style="margin-bottom:10px">Compliance</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${[
+          [c.humanSubjects, 'Human Subjects (IRB)'],
+          [c.animals,       'Animal Use (IACUC)'],
+          [c.biohazard,     'Biohazard (IBC)'],
+          [c.radioactive,   'Radioactive Materials'],
+          [c.exportCtrl,    'Export Control'],
+          [c.coi,           'Conflict of Interest']
+        ].map(([flag, label]) => flag
+          ? `<span class="badge badge-danger">⚠️ ${label}</span>`
+          : `<span class="badge badge-muted">✓ ${label}</span>`
+        ).join('')}
+      </div>
+      ${sub.costShare === 'yes' ? `<div style="margin-top:8px"><span class="badge badge-warning">⚠️ Cost Share — $${Number(sub.costShareAmt||0).toLocaleString()}</span></div>` : ''}
+      ${sub.subrec === 'yes' ? `<div style="margin-top:8px;font-size:0.8rem;color:var(--text-secondary)">Subrecipients: ${sub.subInst || 'TBD'}</div>` : ''}
+    </div>
+
+    ${sub.summary ? `
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title" style="margin-bottom:8px">Project Summary</div>
+      <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;margin:0">${sub.summary}</p>
+    </div>` : ''}
+  `;
+
+  // OSP Notes (read-only for PI)
+  const notes = sub.notes || [];
+  const notesCard = document.createElement('div');
+  notesCard.className = 'card';
+  notesCard.innerHTML = `
+    <div class="card-title" style="margin-bottom:${notes.length ? '12px' : '0'}">
+      💬 Notes from OSP
+      ${notes.length === 0 ? '<span style="font-size:0.78rem;font-weight:400;color:var(--text-muted);margin-left:8px">No notes yet</span>' : ''}
+    </div>
+  `;
+  notes.slice().reverse().forEach(n => {
+    const noteEl = document.createElement('div');
+    noteEl.className = 'osp-note';
+    noteEl.innerHTML = `
+      <div class="osp-note-meta">${n.author} · ${n.ts ? new Date(n.ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div>
+      <div class="osp-note-text">${n.text}</div>
+    `;
+    notesCard.appendChild(noteEl);
+  });
+  el.appendChild(notesCard);
+
   return el;
 }
 
@@ -172,8 +288,9 @@ function renderOppDetail(opp) {
   const pct = Math.round((opp.stage / 12) * 100);
 
   el.innerHTML = `
-    <div style="margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <button class="btn btn-secondary btn-sm" onclick="st.activeOpportunity=null; render();">← Back to Pipeline</button>
+      ${opp.isLive ? `<button class="btn btn-secondary btn-sm" onclick="exportNOIPdf(st.submissions.find(s=>s.id==='${opp.id}'))">📄 Export PDF</button>` : ''}
     </div>
 
     <div class="card" style="margin-bottom:16px">
@@ -252,6 +369,38 @@ function renderOppDetail(opp) {
       </div>
     </div>
   `;
+
+  // Admin notes section (live submissions only)
+  if (opp.isLive) {
+    const notes = opp.notes || [];
+    const notesCard = document.createElement('div');
+    notesCard.className = 'card';
+    notesCard.style.marginTop = '16px';
+    notesCard.innerHTML = `<div class="card-title" style="margin-bottom:${notes.length ? '12px' : '8px'}">💬 OSP Notes</div>`;
+
+    notes.slice().reverse().forEach(n => {
+      const noteEl = document.createElement('div');
+      noteEl.className = 'osp-note';
+      noteEl.innerHTML = `
+        <div class="osp-note-meta">${n.author} · ${n.ts ? new Date(n.ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div>
+        <div class="osp-note-text">${n.text}</div>
+      `;
+      notesCard.appendChild(noteEl);
+    });
+
+    if (st.isAdmin) {
+      const writeArea = document.createElement('div');
+      writeArea.className = 'note-write-area';
+      writeArea.innerHTML = `
+        <textarea class="note-input" id="noteInput-${opp.id}" placeholder="Add a note visible to the PI…" rows="2"></textarea>
+        <button class="btn btn-secondary btn-sm" onclick="submitNote('${opp.id}')">Add Note</button>
+      `;
+      notesCard.appendChild(writeArea);
+    }
+
+    el.appendChild(notesCard);
+  }
+
   return el;
 }
 
@@ -276,6 +425,19 @@ async function advanceSubmission(id, newStage) {
     console.error('Advance failed:', err);
     alert('Could not advance submission. Please try again.');
   }
+}
+
+function submitNote(id) {
+  const input = document.getElementById('noteInput-' + id);
+  if (!input || !input.value.trim()) return;
+  const text   = input.value.trim();
+  const author = st.currentUser?.displayName || st.currentUser?.email || 'OSP';
+  input.value  = '';
+  input.disabled = true;
+  addNote(id, text, author)
+    .catch(err => { console.error('Note failed:', err); alert('Could not save note.'); })
+    .finally(() => { if (input) input.disabled = false; });
+  // onSnapshot listener auto-refreshes the UI
 }
 
 function confirmDeleteSubmission(id) {

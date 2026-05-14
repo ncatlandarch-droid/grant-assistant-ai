@@ -76,6 +76,15 @@ function listenToSubmissions(callback) {
           type:             raw.type             || 'Competitive',
           deadline:         raw.deadline         || '',
           compliance:       raw.compliance       || {},
+          costShare:        raw.costShare        || 'no',
+          costShareAmt:     raw.costShareAmt     || 0,
+          subrec:           raw.subrec           || 'no',
+          subInst:          raw.subInst          || '',
+          effort:           raw.effort           || 0,
+          budgetNotes:      raw.budgetNotes      || '',
+          solicitation:     raw.solicitation     || '',
+          coPIs:            raw.coPIs            || '',
+          notes:            raw.notes            || [],
           submittedAt:      raw.submittedAt,
           isLive:           true
         };
@@ -94,6 +103,16 @@ async function updateSubmissionStage(id, stage) {
 
 async function deleteSubmission(id) {
   await db.collection(SUBMISSIONS_COL).doc(id).delete();
+}
+
+async function addNote(id, text, author) {
+  await db.collection(SUBMISSIONS_COL).doc(id).update({
+    notes: firebase.firestore.FieldValue.arrayUnion({
+      text,
+      author: author || 'OSP',
+      ts: new Date().toISOString()
+    })
+  });
 }
 
 function sendEmail(type, data) {
