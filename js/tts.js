@@ -4,7 +4,7 @@
    Proxied via /.netlify/functions/gemini-tts
    ============================================ */
 
-const VOICE_NAME = 'Zephyr';
+const VOICE_NAME = 'Charon';
 
 // Singleton AudioContext — created on first user gesture, reused forever.
 // This is required because browsers block AudioContext after async gaps.
