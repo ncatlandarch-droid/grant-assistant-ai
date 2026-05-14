@@ -1565,6 +1565,47 @@ input, select, textarea { font-family: inherit; }
 }
 
 /* ================================================================
+   RESEARCH MATCH — Document Upload
+   ================================================================ */
+
+.drop-zone {
+  border: 2px dashed rgba(253,185,39,0.3);
+  border-radius: var(--radius);
+  padding: 36px 24px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(253,185,39,0.03);
+  transition: border-color 0.2s, background 0.2s;
+}
+.drop-zone:hover {
+  border-color: rgba(253,185,39,0.6);
+  background: rgba(253,185,39,0.06);
+}
+.drop-zone.drag-over {
+  border-color: var(--aggie-gold);
+  background: rgba(253,185,39,0.1);
+}
+
+.upload-or {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin: 14px 0;
+  position: relative;
+}
+.upload-or::before,
+.upload-or::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 38%;
+  height: 1px;
+  background: var(--border);
+}
+.upload-or::before { left: 0; }
+.upload-or::after  { right: 0; }
+
+/* ================================================================
    OSP NOTES
    ================================================================ */
 

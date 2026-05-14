@@ -62,11 +62,12 @@ const INSTITUTION_CONFIG = {
 
   // ── Navigation Tabs ───────────────────────────────────────
   navTabs: [
-    { id: 'dashboard',     label: '📊 Dashboard' },
-    { id: 'opportunities', label: '🔍 Opportunities' },
-    { id: 'pipeline',      label: '📋 Pipeline' },
-    { id: 'noi-wizard',    label: '📝 NOI Wizard' },
-    { id: 'resources',     label: '📚 Resources' }
+    { id: 'dashboard',      label: '📊 Dashboard' },
+    { id: 'opportunities',  label: '🔍 Opportunities' },
+    { id: 'research-match', label: '🔬 Research Match' },
+    { id: 'pipeline',       label: '📋 Pipeline' },
+    { id: 'noi-wizard',     label: '📝 NOI Wizard' },
+    { id: 'resources',      label: '📚 Resources' }
   ],
 
   // ── Grant Office Contact ──────────────────────────────────

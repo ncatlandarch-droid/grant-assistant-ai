@@ -356,8 +356,9 @@ function render() {
   workspace.className = 'col-workspace';
   switch (st.view) {
     case 'dashboard': workspace.appendChild(renderDashboard()); break;
-    case 'opportunities': workspace.appendChild(renderOpportunities()); break;
-    case 'pipeline': workspace.appendChild(renderPipeline()); break;
+    case 'opportunities':  workspace.appendChild(renderOpportunities()); break;
+    case 'research-match': workspace.appendChild(renderDocumentAnalysis()); break;
+    case 'pipeline':       workspace.appendChild(renderPipeline()); break;
     case 'noi-wizard': workspace.appendChild(renderNOIWizard()); break;
     case 'resources': workspace.appendChild(renderResources()); break;
     default: workspace.appendChild(renderDashboard());
