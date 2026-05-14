@@ -30,11 +30,25 @@ function renderPipeline() {
     return el;
   }
 
+  // Admin can toggle between kanban and table view
+  if (st.isAdmin && st.pipelineView === 'table') {
+    el.appendChild(renderAdminTable());
+    return el;
+  }
+
   const liveCount = liveItems.length;
   el.innerHTML = `
     <div class="section-header">
       <h2>📋 Grant <span>Pipeline</span></h2>
-      <button class="btn btn-secondary btn-sm" onclick="setView('noi-wizard')">+ New NOI</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        ${st.isAdmin ? `
+          <div class="view-toggle">
+            <button class="view-toggle-btn ${st.pipelineView === 'kanban' ? 'active' : ''}" onclick="st.pipelineView='kanban'; render()">📋 Board</button>
+            <button class="view-toggle-btn ${st.pipelineView === 'table'  ? 'active' : ''}" onclick="st.pipelineView='table';  render()">📊 Table</button>
+          </div>
+        ` : ''}
+        <button class="btn btn-secondary btn-sm" onclick="setView('noi-wizard')">+ New NOI</button>
+      </div>
     </div>
     <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:16px">
       Track proposals through the 12-stage approval process. Click any card for details.
@@ -91,6 +105,206 @@ function renderPipeline() {
 
   el.appendChild(board);
   return el;
+}
+
+// ── Admin Table View ─────────────────────────────────────────────────────────
+
+function renderAdminTable() {
+  const subs   = st.submissions || [];
+  const total  = subs.reduce((n, s) => n + (s.estimatedFunding || 0), 0);
+  const active = subs.filter(s => s.stage < 12).length;
+
+  const el = document.createElement('div');
+
+  el.innerHTML = `
+    <div class="section-header" style="margin-bottom:12px">
+      <h2>📋 Grant <span>Pipeline</span></h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="view-toggle">
+          <button class="view-toggle-btn" onclick="st.pipelineView='kanban'; render()">📋 Board</button>
+          <button class="view-toggle-btn active">📊 Table</button>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="setView('noi-wizard')">+ New NOI</button>
+      </div>
+    </div>
+
+    <div class="admin-stats-bar">
+      <div class="admin-stat"><span class="admin-stat-num">${subs.length}</span><span class="admin-stat-label">Total</span></div>
+      <div class="admin-stat"><span class="admin-stat-num">${active}</span><span class="admin-stat-label">Active</span></div>
+      <div class="admin-stat"><span class="admin-stat-num">$${(total/1000).toFixed(0)}K</span><span class="admin-stat-label">Portfolio</span></div>
+      <div class="admin-stat"><span class="admin-stat-num">${subs.filter(s=>s.stage===12).length}</span><span class="admin-stat-label">Complete</span></div>
+    </div>
+
+    <div class="admin-table-controls">
+      <input type="text" class="admin-search" id="tableSearchInput"
+             placeholder="Search title, PI, sponsor…"
+             value="${st.tableFilter.search}"
+             oninput="st.tableFilter.search=this.value; _refreshTableBody()">
+      <select class="admin-stage-filter" onchange="st.tableFilter.stage=this.value; _refreshTableBody()">
+        <option value="">All Stages</option>
+        ${PIPELINE_STAGES.map(s => `<option value="${s.id}" ${st.tableFilter.stage == s.id ? 'selected' : ''}>${s.id}. ${s.name}</option>`).join('')}
+      </select>
+      <button class="btn btn-secondary btn-sm" onclick="exportSubmissionsCSV()">⬇ Export CSV</button>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            ${[
+              ['title',            'Title'],
+              ['piName',           'PI'],
+              ['piDept',           'Dept'],
+              ['sponsor',          'Sponsor'],
+              ['estimatedFunding', 'Funding'],
+              ['stage',            'Stage'],
+              ['deadline',         'Deadline']
+            ].map(([col, label]) => `
+              <th class="sortable ${st.tableSort.col === col ? 'sort-active' : ''}"
+                  onclick="sortTable('${col}')">
+                ${label}${st.tableSort.col === col ? (st.tableSort.dir === 'asc' ? ' ↑' : ' ↓') : ''}
+              </th>
+            `).join('')}
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="adminTableBody"></tbody>
+      </table>
+    </div>
+  `;
+
+  _refreshTableBody();
+  return el;
+}
+
+function _refreshTableBody() {
+  const tbody = document.getElementById('adminTableBody');
+  if (!tbody) return;
+
+  let items = (st.submissions || []).slice();
+
+  // Filter
+  const search = (st.tableFilter.search || '').toLowerCase();
+  const stage  = st.tableFilter.stage;
+  if (search) items = items.filter(s =>
+    [s.title, s.piName, s.piDept, s.sponsor].join(' ').toLowerCase().includes(search));
+  if (stage)  items = items.filter(s => String(s.stage) === String(stage));
+
+  // Sort — handle Firestore Timestamps for submittedAt
+  const col = st.tableSort.col;
+  const dir = st.tableSort.dir;
+  items.sort((a, b) => {
+    let va = a[col] ?? '', vb = b[col] ?? '';
+    if (va?.toDate) va = va.toDate().getTime();
+    if (vb?.toDate) vb = vb.toDate().getTime();
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (va < vb) return dir === 'asc' ?  -1 : 1;
+    if (va > vb) return dir === 'asc' ?   1 : -1;
+    return 0;
+  });
+
+  if (items.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--text-muted)">No matching submissions</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = items.map(s => {
+    const stageObj = PIPELINE_STAGES.find(p => p.id === s.stage);
+    const days     = s.deadline ? getDaysRemaining(s.deadline) : '—';
+    const urgency  = days.includes('overdue') ? 'color:#f87171' : days.includes('⚠️') ? 'color:#fbbf24' : '';
+    return `
+      <tr>
+        <td class="table-title" title="${s.title}">${s.title.substring(0, 44)}${s.title.length > 44 ? '…' : ''}</td>
+        <td style="white-space:nowrap">${s.piName}</td>
+        <td style="font-size:0.78rem;color:var(--text-secondary)">${s.piDept.substring(0, 18)}${s.piDept.length > 18 ? '…' : ''}</td>
+        <td style="font-size:0.82rem">${s.sponsor}</td>
+        <td style="color:var(--aggie-gold);font-weight:700;white-space:nowrap">$${(s.estimatedFunding/1000).toFixed(0)}K</td>
+        <td>
+          <span class="stage-badge" style="background:${stageObj?.color || '#888'}22;color:${stageObj?.color || '#888'};border-color:${stageObj?.color || '#888'}44">
+            ${s.stage}. ${stageObj?.short || ''}
+          </span>
+        </td>
+        <td style="font-size:0.78rem;${urgency};white-space:nowrap">${days}</td>
+        <td>
+          <div style="display:flex;gap:5px;align-items:center">
+            ${s.stage < 12
+              ? `<button class="admin-advance-btn" style="padding:3px 7px;font-size:0.67rem" onclick="advanceSubmission('${s.id}',${s.stage+1})">→${s.stage+1}</button>`
+              : `<span style="color:var(--caes-green-mid);font-size:0.72rem;font-weight:700">✓</span>`}
+            <button class="admin-delete-btn" style="padding:3px 7px;font-size:0.67rem" onclick="confirmDeleteSubmission('${s.id}')">✕</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function sortTable(col) {
+  if (st.tableSort.col === col) {
+    st.tableSort.dir = st.tableSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    st.tableSort = { col, dir: 'asc' };
+  }
+  render(); // full re-render so header sort indicators update
+}
+
+// CSV export — pure browser, no server needed.
+// Builds a text string, wraps it in a Blob (in-memory file), creates a
+// temporary download link, clicks it, then removes it.
+function exportSubmissionsCSV() {
+  const items = st.submissions || [];
+  if (items.length === 0) { alert('No submissions to export.'); return; }
+
+  const headers = [
+    'Title','PI Name','PI Email','Department','College',
+    'Sponsor','Program','Solicitation','Grant Type',
+    'Funding ($)','Duration','Deadline','Stage','Status',
+    'Cost Share','Cost Share Amt','Subrecipients','Sub Institutions',
+    'Human Subjects','Animal Use','Biohazard','Radioactive','Export Control','COI',
+    'PI Effort (%)','Budget Notes','Submitted At'
+  ];
+
+  const escape = v => `"${String(v || '').replace(/"/g, '""')}"`;
+
+  const rows = items.map(s => [
+    escape(s.title),
+    escape(s.piName),
+    escape(s.piEmail),
+    escape(s.piDept),
+    escape(s.piCollege || 'CAES'),
+    escape(s.sponsor),
+    escape(s.program),
+    escape(s.solicitation),
+    escape(s.type),
+    s.estimatedFunding || 0,
+    escape(s.duration),
+    s.deadline || '',
+    s.stage || 1,
+    escape(s.status),
+    s.costShare === 'yes' ? 'Yes' : 'No',
+    s.costShareAmt || 0,
+    s.subrec === 'yes' ? 'Yes' : 'No',
+    escape(s.subInst),
+    s.compliance?.humanSubjects ? 'Yes' : 'No',
+    s.compliance?.animals       ? 'Yes' : 'No',
+    s.compliance?.biohazard     ? 'Yes' : 'No',
+    s.compliance?.radioactive   ? 'Yes' : 'No',
+    s.compliance?.exportCtrl    ? 'Yes' : 'No',
+    s.compliance?.coi           ? 'Yes' : 'No',
+    s.effort || '',
+    escape(s.budgetNotes),
+    s.submittedAt ? (s.submittedAt.toDate ? s.submittedAt.toDate() : new Date(s.submittedAt)).toLocaleDateString() : ''
+  ].join(','));
+
+  const csv  = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), {
+    href: url, download: `submissions_${new Date().toISOString().split('T')[0]}.csv`
+  });
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url); // free memory immediately
 }
 
 function renderMySubmissions() {

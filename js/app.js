@@ -13,9 +13,12 @@ const st = {
   wizardStep: 0,
   noiData: {},
   _greeting: null,
-  submissions: [],  // live Firestore submissions
-  currentUser: null,
-  isAdmin: false
+  submissions:   [],   // live Firestore submissions
+  currentUser:   null,
+  isAdmin:       false,
+  pipelineView:  'kanban',             // 'kanban' | 'table'
+  tableSort:     { col: 'submittedAt', dir: 'desc' },
+  tableFilter:   { search: '', stage: '' }
 };
 
 // --- DOM Helper ---

@@ -1466,6 +1466,139 @@ input, select, textarea { font-family: inherit; }
 .admin-delete-btn:hover { background: rgba(220,50,50,0.25); }
 
 /* ================================================================
+   ADMIN TABLE VIEW
+   ================================================================ */
+
+.view-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.view-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.view-toggle-btn.active,
+.view-toggle-btn:hover {
+  background: rgba(253,185,39,0.12);
+  color: var(--aggie-gold);
+}
+
+.admin-stats-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.admin-stat {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 20px;
+  text-align: center;
+  min-width: 80px;
+}
+.admin-stat-num {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--aggie-gold);
+}
+.admin-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.admin-table-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.admin-search {
+  flex: 1;
+  min-width: 180px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.83rem;
+  padding: 7px 12px;
+  font-family: inherit;
+}
+.admin-search:focus { outline: none; border-color: var(--aggie-gold); }
+.admin-search::placeholder { color: var(--text-muted); }
+
+.admin-stage-filter {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.83rem;
+  padding: 7px 12px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.admin-table thead {
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--border);
+}
+.admin-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.admin-table th.sortable { cursor: pointer; user-select: none; }
+.admin-table th.sortable:hover { color: var(--text-secondary); }
+.admin-table th.sort-active { color: var(--aggie-gold); }
+
+.admin-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: middle;
+}
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.table-title { font-weight: 600; color: var(--text-primary); }
+
+.stage-badge {
+  display: inline-block;
+  font-size: 0.69rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+/* ================================================================
    PI PORTAL — My Proposals
    ================================================================ */
 
