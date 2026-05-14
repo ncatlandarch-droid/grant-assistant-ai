@@ -178,6 +178,18 @@ function renderOppDetail(opp) {
 async function advanceSubmission(id, newStage) {
   try {
     await updateSubmissionStage(id, newStage);
+
+    // Email the PI their stage update
+    const sub = st.submissions.find(s => s.id === id);
+    if (sub?.piEmail) {
+      sendEmail('stage_advance', {
+        piEmail:          sub.piEmail,
+        title:            sub.title,
+        stage:            newStage,
+        sponsor:          sub.sponsor,
+        estimatedFunding: sub.estimatedFunding
+      }).catch(console.error);
+    }
   } catch (err) {
     console.error('Advance failed:', err);
     alert('Could not advance submission. Please try again.');

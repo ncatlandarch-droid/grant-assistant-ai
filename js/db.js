@@ -47,6 +47,10 @@ async function saveSubmission(data) {
   };
 
   const ref = await db.collection(SUBMISSIONS_COL).add(doc);
+
+  // Fire-and-forget emails — don't block the UI
+  sendEmail('submission', { ...doc, estimatedFunding: data.funding }).catch(console.error);
+
   return ref.id;
 }
 
@@ -90,4 +94,12 @@ async function updateSubmissionStage(id, stage) {
 
 async function deleteSubmission(id) {
   await db.collection(SUBMISSIONS_COL).doc(id).delete();
+}
+
+function sendEmail(type, data) {
+  return fetch('/.netlify/functions/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type, data })
+  });
 }
