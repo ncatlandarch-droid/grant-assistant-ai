@@ -24,12 +24,85 @@ Key institutional context:
 - Proposals must be entered into InfoEd (NC A&T's grants management system) before OSP can submit
 - All grants are submitted through Grants.gov (federal) or sponsor portals (NSF: research.gov, NIH: era.nih.gov)
 
+The 8 areas where NC A&T PIs most commonly need help (prioritize these in your guidance):
+
+1. BUDGET DEVELOPMENT & JUSTIFICATION
+- Correctly categorizing costs: participant support vs. travel vs. supplies vs. equipment (>$5K)
+- Writing budget justifications that match every line to a project activity
+- Calculating effort in person-months: 1 academic month = 1/9 AY salary; summer = 1/3 of AY salary per month
+- Course release structuring: typically 1 course = ~12.5% academic year effort
+- IDC/cost-share waiver language: when to request, how to justify
+- USDA-NIFA has specific budget formatting requirements — always check the RFA
+- Matching narrative activities to every budget line item — reviewers check this
+
+2. SPONSOR COMPLIANCE REQUIREMENTS
+- SciENcv for NSF/NIH biosketches (not Word documents — must be system-generated)
+- USDA biosketches follow a different format from NIH
+- COI (Conflict of Interest) forms required for all key personnel at submission
+- CPOS (Current and Pending Other Support) format varies by agency — NSF uses SciENcv, NIH uses Other Support pages
+- Page limitations and formatting rules are strictly enforced — violations can disqualify proposals
+- Subaward documentation: each subrecipient needs a scope of work, detailed budget, budget justification, and institutional approval
+- LOI vs. full proposal: Letters of Intent are usually non-binding but required by the solicitation deadline
+
+3. INTERNAL ROUTING & TIMING
+- NOI must be submitted 8–10 weeks before sponsor deadline
+- Department Chair approval: 3–5 business days
+- Associate Dean and Dean review: 3–5 business days each
+- OSP review: 5–7 business days minimum before deadline
+- InfoEd entry must be complete before OSP final review — not the day before deadline
+- Subrecipient coordination adds 2–3 weeks: collect scope, budget, justification, and institutional signatures
+- Always add buffer — last-minute edits from reviewers are common
+
+4. WRITING FOR SPONSOR PRIORITIES (not just research interests)
+- Read the program solicitation evaluation criteria and write directly to each criterion
+- Broader impacts section must be specific: workforce development, extension activities, underrepresented groups
+- Collaborative/multidisciplinary framing: name partners, describe their specific contributions, explain why the team is uniquely positioned
+- Translating technical work into competitive language: lead with the problem and its significance, not the methodology
+- For USDA-NIFA: align with the USDA Strategic Plan priorities (food and ag sciences, climate, rural prosperity)
+- For NSF: address both Intellectual Merit and Broader Impacts explicitly — equal weight in review
+- Extension and outreach impacts are weighted heavily for 1890 land-grant programs
+
+5. EFFORT & SALARY STRUCTURES
+- Academic Year (AY) effort: 9-month appointment. Summer = 3 months additional. Max summer salary = 3/9 of AY = 33% of AY salary
+- Person-months: AY effort of 10% = 0.9 person-months on a 9-month appointment
+- Course release: faculty paid by grant instead of teaching; requires dean approval; counts against total effort
+- Maximum allowable effort: PIs cannot commit more than 100% effort across all projects — OSP tracks this
+- Salary recovery: grant pays a portion of faculty salary, department recovers that FTE
+- Graduate student allocations: typically 50% RA appointment (20 hrs/wk) with tuition and fees
+- Effort must be consistent across the budget, budget justification, and project description
+
+6. SUBAWARD COORDINATION
+- Start subaward conversations with partner institutions at least 6 weeks before deadline
+- Required from each subrecipient: scope of work, detailed budget, budget justification, key personnel biosketches, institutional authorization letter, F&A rate agreement
+- NC A&T's sponsored programs office must review and approve all subaward agreements
+- Subrecipient budgets must be consistent with the prime proposal budget
+- Subrecipients need their own compliance clearances (IRB, IACUC, export control)
+- Flow-down clauses: sponsor requirements flow down to subrecipients — make this explicit in the subaward agreement
+
+7. PROPOSAL NARRATIVE INTEGRATION
+- Budget must match scope: every activity in the narrative needs a corresponding budget line
+- Personnel effort in the budget must match what the narrative says each person will do
+- Travel must be justified specifically: conference name, purpose, estimated cost
+- Evaluation plans must be specific: who evaluates, what metrics, what data collected, timeline
+- Project timeline/Gantt chart must be consistent with objectives and budget period
+- Reviewers check consistency across sections — inconsistencies are a common reason for lower scores
+
+8. STRATEGIC PLANNING FOR LARGE OPPORTUNITIES
+- Large federal opportunities (>$500K) require cross-department coordination starting 6+ months early
+- Faculty should not approach large center grants independently — engage DORED and OSP early for strategy
+- Identify institutional strengths and gaps before building the team
+- NC A&T's 1890 land-grant mission should be explicitly integrated into large proposals
+- Letters of support from administration (Provost, VP Research) take 2–3 weeks to arrange
+- Pilot data is critical for large competitive awards — plan 1–2 years ahead
+
 Communication style:
 - Be professional but warm and approachable
 - Use clear, actionable language with step-by-step guidance
 - Always reference specific portals, forms, and contacts by name
 - Flag compliance requirements early — they take 4–8 weeks
-- When mentioning a portal or system, tell the user where to find it`;
+- When mentioning a portal or system, tell the user where to find it
+- When someone asks about budget, always ask about effort percentage and cost-share requirements
+- When someone is close to a deadline, immediately flag the internal routing timeline risk`;
 
 /* ============================================================
    LINKED RESOURCES — Level 1 Integration
@@ -227,6 +300,30 @@ const GRANT_KNOWLEDGE = {
     {
       q: 'What is cost share?',
       a: 'Cost share (matching) is the portion of project costs NOT paid by the sponsor. Types: (1) Cash match — actual university funds committed; (2) In-kind — contributed services, equipment, or facilities; (3) Third-party — contributions from collaborators. Cost share commitments are <strong>legally binding</strong>. Always check if cost share is required, allowed, or prohibited by the solicitation before committing.'
+    },
+    {
+      q: 'How do I calculate effort and person-months?',
+      a: '<strong>Academic Year (AY):</strong> NC A&T faculty are on 9-month appointments. 10% effort = 0.9 person-months. 25% effort = 2.25 person-months.<br><br><strong>Summer:</strong> Summer = 3 months. Maximum summer salary = 3/9 of AY salary (33%). Summer effort of 1 month = 1 person-month.<br><br><strong>Course release:</strong> One course ≈ 12.5% AY effort. The grant pays that portion of the faculty salary; the department recovers the FTE.<br><br><strong>Rule:</strong> Total effort across ALL active projects cannot exceed 100%. OSP tracks this — inconsistencies create audit risk. Your budget, budget justification, and project narrative must all show the same effort percentages.'
+    },
+    {
+      q: 'How do I write a budget justification?',
+      a: 'Every line in your budget needs a sentence or paragraph in the budget justification explaining: (1) WHO — the person or item, (2) WHAT — what they will do, (3) WHY — why it is necessary for the project, (4) HOW MUCH — how you calculated the cost.<br><br>Common mistakes: vague justifications ("travel for project activities"), participant support listed as travel, equipment under $5K listed as equipment (should be supplies), and effort that does not match what the narrative says the person will do.<br><br>For USDA-NIFA: check the RFA for specific budget categories and allowability rules — they differ from NSF and NIH.'
+    },
+    {
+      q: 'What biosketch format do I need?',
+      a: '<strong>NSF:</strong> Use SciENcv (Science Experts Network Curriculum Vitae) — system-generated, not a Word document. Log in at <a href="https://www.ncbi.nlm.nih.gov/sciencv/" target="_blank">ncbi.nlm.nih.gov/sciencv</a>. NSF format: 3-page limit, 5 products most closely related, 5 other significant products.<br><br><strong>NIH:</strong> Also uses SciENcv. NIH biosketch format with personal statement, positions/honors, contributions to science.<br><br><strong>USDA-NIFA:</strong> Has its own format — check the specific RFA. Some programs use the NIH format, some have a NIFA-specific template.<br><br><strong>Key rule:</strong> Never submit a Word-formatted CV as a biosketch — it will trigger a compliance error during review.'
+    },
+    {
+      q: 'How do I handle subawards / subrecipients?',
+      a: 'Start the conversation with partner institutions <strong>at least 6 weeks before the deadline.</strong><br><br>You need from each subrecipient:<br>• Scope of Work (tied to your proposal objectives)<br>• Detailed budget + budget justification<br>• Key personnel biosketches<br>• Authorized institutional signature (their grants office must sign)<br>• F&A (IDC) rate agreement<br>• Their own compliance clearances if applicable (IRB, IACUC)<br><br>NC A&T OSP must review and approve all subaward agreements. Subrecipient budgets must be consistent with the prime budget — reviewers check both. Budget changes between prime and subrecipient are a common cause of revision requests.'
+    },
+    {
+      q: 'How do I write for sponsor priorities, not just my research?',
+      a: 'Read the program solicitation\'s <strong>evaluation criteria</strong> first — write directly to each criterion, using the same language the reviewers will use to score your proposal.<br><br><strong>For NSF:</strong> Address Intellectual Merit AND Broader Impacts explicitly in separate sections. Reviewers score both equally.<br><br><strong>For USDA-NIFA:</strong> Align with the USDA Strategic Plan. Emphasize food security, climate resilience, rural prosperity, and workforce development. The 1890 land-grant mission and extension outreach are weighted heavily.<br><br><strong>Common mistake:</strong> Writing a description of your research interests instead of a competitive proposal. Lead with the problem and its national significance, not your methodology. Reviewers decide in the first paragraph whether this is competitive.'
+    },
+    {
+      q: 'What is the difference between an LOI and a full proposal?',
+      a: 'A Letter of Intent (LOI) is a brief non-binding notice to the sponsor that you plan to submit a full proposal. Most LOIs are 1–2 pages: project title, PI name, brief abstract, and estimated budget.<br><br><strong>Important:</strong> LOIs are usually required by a specific deadline — missing it may disqualify you from submitting the full proposal. Check the solicitation carefully.<br><br>An LOI does NOT require full institutional processing through OSP — but notify your Grant Manager so they can calendar the full proposal deadline. The full proposal requires the complete internal routing process (8–10 weeks).'
     }
   ],
 

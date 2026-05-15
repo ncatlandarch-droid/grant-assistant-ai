@@ -104,7 +104,14 @@ function filterOpportunities() {
   return data;
 }
 
-function updateOppSearch(val) { st.oppSearch = val; render(); }
+function updateOppSearch(val) {
+  st.oppSearch = val;
+  // Restore focus + cursor after render so the full DOM rebuild doesn't break typing
+  const pos = document.getElementById('oppSearch')?.selectionStart;
+  render();
+  const input = document.getElementById('oppSearch');
+  if (input) { input.focus(); if (pos != null) input.setSelectionRange(pos, pos); }
+}
 
 function clearOppSearch() {
   st.oppSearch  = '';

@@ -3,12 +3,14 @@
    ============================================ */
 
 const QUICK_CHIPS = [
-  { label: '🔍 Find Opportunities', prompt: 'Help me find grant opportunities for my research area' },
   { label: '📝 Start NOI', prompt: 'Walk me through starting a Notice of Intent' },
-  { label: '✅ Check Compliance', prompt: 'What compliance reviews does my project need?' },
-  { label: '💰 Budget Help', prompt: 'Help me develop a budget for my proposal' },
-  { label: '📄 Review Narrative', prompt: 'Give me tips for writing a strong project narrative' },
-  { label: '⏰ Timeline', prompt: 'What is the internal timeline for submitting a proposal?' }
+  { label: '💰 Build My Budget', prompt: 'Help me develop a budget and budget justification for my proposal. What do I need to know about effort, IDC, and cost categories?' },
+  { label: '⏰ Timeline Check', prompt: 'What is the internal timeline for submitting a proposal and what are the deadlines I need to hit?' },
+  { label: '✅ Compliance Review', prompt: 'What compliance reviews might my project need — IRB, IACUC, export control, conflict of interest?' },
+  { label: '📊 Effort & Salary', prompt: 'Help me calculate effort and person-months for my proposal. How do academic year, summer, and course release work?' },
+  { label: '🤝 Subaward Help', prompt: 'I have a subrecipient on my proposal. What do I need from them and when?' },
+  { label: '✍️ Write for Reviewers', prompt: 'How do I write my project narrative to score well with reviewers and align with sponsor priorities?' },
+  { label: '📋 Biosketch Format', prompt: 'What biosketch format do I need — NSF SciENcv, NIH, or USDA? How do I create it?' }
 ];
 
 function renderQuickChips() {
@@ -117,26 +119,38 @@ function getLocalResponse(text) {
   const lower = text.toLowerCase();
   const faq = GRANT_KNOWLEDGE.faq;
 
-  if (lower.includes('first step') || lower.includes('start') || lower.includes('noi') || lower.includes('notice of intent'))
+  if (lower.includes('first step') || lower.includes('noi') || lower.includes('notice of intent'))
     return faq[0].a;
   if (lower.includes('idc') || lower.includes('indirect'))
     return faq[1].a;
-  if (lower.includes('advance') || lower.includes('timeline') || lower.includes('how long') || lower.includes('when'))
+  if (lower.includes('timeline') || lower.includes('how long') || lower.includes('how far in advance'))
     return faq[2].a;
   if (lower.includes('infoed'))
     return faq[3].a;
   if (lower.includes('compliance') || lower.includes('irb') || lower.includes('iacuc'))
     return faq[4].a;
-  if (lower.includes('cost share') || lower.includes('match'))
+  if (lower.includes('where do i submit') || lower.includes('grants.gov') || lower.includes('portal'))
     return faq[5].a;
-  if (lower.includes('budget') || lower.includes('money') || lower.includes('funding'))
-    return 'For budget development, you\'ll need: (1) Personnel costs (salaries + fringe at ~35%), (2) Equipment (>$5K items), (3) Travel, (4) Participant support, (5) Other direct costs, (6) Indirect costs (48% for competitive, 0% for capacity). Would you like me to help calculate a budget for a specific opportunity?';
-  if (lower.includes('opportunit') || lower.includes('find') || lower.includes('search'))
-    return `We have ${OPPORTUNITIES_DATA.length} opportunities in the system. You can browse them in the Opportunities tab, or tell me your research area and I'll help match you with relevant funding programs. Major sponsors include USDA NIFA, NSF, NIH, DOD, DOE, and EPA.`;
-  if (lower.includes('narrative') || lower.includes('writ'))
-    return 'For a strong project narrative: (1) Start with a clear problem statement tied to national priorities, (2) Review the evaluation criteria in the solicitation, (3) Connect to NC A&T\'s 1890 Land-Grant mission, (4) Include preliminary data when possible, (5) Clearly describe broader impacts, (6) Stay within page limits. I can review drafts and suggest improvements.';
+  if (lower.includes('cost share') || lower.includes('matching'))
+    return faq[6].a;
+  if (lower.includes('effort') || lower.includes('person-month') || lower.includes('person month') || lower.includes('salary') || lower.includes('course release'))
+    return faq[7].a;
+  if (lower.includes('budget justif') || lower.includes('justify') || lower.includes('budget narr'))
+    return faq[8].a;
+  if (lower.includes('biosketch') || lower.includes('scienvc') || lower.includes('cv') || lower.includes('curriculum'))
+    return faq[9].a;
+  if (lower.includes('subaward') || lower.includes('subrecipient') || lower.includes('partner') || lower.includes('sub '))
+    return faq[10].a;
+  if (lower.includes('narrative') || lower.includes('writ') || lower.includes('reviewer') || lower.includes('broader impact'))
+    return faq[11].a;
+  if (lower.includes('loi') || lower.includes('letter of intent'))
+    return faq[12].a;
+  if (lower.includes('budget') || lower.includes('cost') || lower.includes('money'))
+    return 'For budget development: (1) Personnel — salaries + fringe (~35%), (2) Equipment — items over $5,000, (3) Travel — justify each trip specifically, (4) Participant support — stipends/subsistence for non-employees, (5) Other direct costs — supplies, subawards, (6) Indirect costs — 48% MTDC for competitive, 0% for capacity. Every line needs a matching justification sentence. What type of project are you budgeting?';
+  if (lower.includes('opportunit') || lower.includes('find') || lower.includes('search') || lower.includes('funding'))
+    return `We have ${OPPORTUNITIES_DATA.length} opportunities in the system. Describe your research idea and I will match you to specific programs — or go to the Opportunities tab and search by keyword. Major sponsors at NC A&T include USDA NIFA, NSF, NIH, DOD, DOE, and EPA.`;
 
-  return 'I can help you with finding grant opportunities, starting an NOI, budget development, compliance reviews, and writing guidance. What specific aspect of the grant process would you like help with?';
+  return 'I can help with: finding grant opportunities, budget development and justification, effort and salary calculations, compliance reviews (IRB/IACUC), subaward coordination, writing for reviewer criteria, biosketch formats, and the internal routing timeline. What do you need help with?';
 }
 
 function addMessage(role, text) {
