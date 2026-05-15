@@ -39,15 +39,10 @@ const INSTITUTION_CONFIG = {
   assistant: {
     name:    'Granted!',
     role:    'AI Grant Assistant',
-    image:   'images/grant-avatar.png',
-    voice:   'Charon',   // Gemini TTS voice — warm professional male
+    image:   'images/Cathy Avatar Image.png',
+    voice:   'Aoede',
     greeting: "Hello! I'm Granted!, your AI Grant Assistant for NC A&T CAES. I can help you find funding opportunities, navigate the NOI process, build budgets, and ensure compliance. What would you like to work on today?",
-    modes: [
-      { id: 'coach',      label: 'Grant Coach',     desc: 'General guidance and process navigation' },
-      { id: 'budget',     label: 'Budget Advisor',  desc: 'Budget development and IDC calculations' },
-      { id: 'compliance', label: 'Compliance Check',desc: 'IRB, IACUC, and regulatory requirements' },
-      { id: 'writing',    label: 'Writing Assistant',desc: 'Narrative development and review' }
-    ],
+    modes: [],
     // Pre-recorded coaching keys → matching WAV files in assets/audio/
     // Add en-<key>.wav files to enable instant zero-latency playback
     coachingMessages: {

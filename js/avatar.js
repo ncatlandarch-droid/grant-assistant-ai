@@ -38,7 +38,7 @@ function renderAvatarPanel() {
         <div class="avatar-name-row">
           <span class="avatar-name">${up.displayName}</span>
           <button class="voice-badge" onclick="GRANT_TTS.toggleMute()" title="Toggle voice on/off">🔊</button>
-          <button class="profile-edit-btn" onclick="st.editingProfile=true; _pendingAvatarDataUrl=null; render()" title="Edit profile">✏️</button>
+          <button class="profile-edit-btn" onclick="st.editingProfile=true; render()" title="Edit profile">✏️</button>
         </div>
         <div class="avatar-role">${up.formalTitle || up.role}</div>
         ${up.department ? `<div class="avatar-dept">${up.department}</div>` : ''}
@@ -67,7 +67,6 @@ function renderAvatarPanel() {
   }
 
   panel.appendChild(profile);
-  panel.appendChild(renderQuickChips());
   panel.appendChild(renderChatMessages());
   panel.appendChild(renderChatInput());
 
@@ -129,7 +128,7 @@ function _renderProfileEditForm(up) {
     <div class="profile-edit-form">
       <div class="pef-header">
         <span class="pef-title">Edit Profile</span>
-        <button class="pef-close" onclick="st.editingProfile=false; _pendingAvatarDataUrl=null; render()">✕</button>
+        <button class="pef-close" onclick="st.editingProfile=false; render()">✕</button>
       </div>
 
       <label class="pef-label">Display Name</label>
@@ -144,22 +143,13 @@ function _renderProfileEditForm(up) {
       <input id="pef-dept" class="pef-input" value="${safeVal(up.department)}"
              placeholder="e.g. CAES · OSP">
 
-      <label class="pef-label">Profile Photo</label>
-      <div class="pef-photo-options">
-        <label class="pef-upload-btn" title="Granted! will remove the background and create a clean white-background portrait">
-          📷 Upload Photo
-          <input type="file" id="pef-file" accept="image/jpeg,image/png,image/webp,image/*"
-                 style="display:none" onchange="handleAvatarFileSelect(this,'pefPreview')">
-        </label>
-        <span class="pef-or">or</span>
-        <input id="pef-photo" class="pef-input pef-url-input" value="${photoVal}"
-               placeholder="paste a URL"
-               oninput="onAvatarUrlInput(this.value,'pefPreview','pefPreviewImg')">
-      </div>
+      <label class="pef-label">Profile Photo URL</label>
+      <input id="pef-photo" class="pef-input" value="${photoVal}"
+             placeholder="Paste an image URL"
+             oninput="onAvatarUrlInput(this.value,'pefPreview','pefPreviewImg')">
       <div class="pef-photo-preview" id="pefPreview" style="display:${showPreview ? 'block' : 'none'}">
         <img id="pefPreviewImg" src="${previewSrc}" onerror="this.parentElement.style.display='none'">
       </div>
-      <div id="pefStatus" class="pef-status"></div>
 
       <label class="pef-label">Preferred Voice</label>
       <select id="pef-voice" class="pef-input pef-select">
@@ -170,7 +160,7 @@ function _renderProfileEditForm(up) {
 
       <div class="pef-actions">
         <button class="btn btn-primary btn-sm" onclick="saveProfileEdit()">Save Changes</button>
-        <button class="btn btn-secondary btn-sm" onclick="st.editingProfile=false; _pendingAvatarDataUrl=null; render()">Cancel</button>
+        <button class="btn btn-secondary btn-sm" onclick="st.editingProfile=false; render()">Cancel</button>
       </div>
     </div>
   `;
@@ -311,18 +301,16 @@ async function saveProfileEdit() {
   if (!st.currentUser) return;
 
   const data = {};
-  if (name)                   data.displayName    = name;
-  if (title)                  data.formalTitle    = title;
-  if (dept)                   data.department     = dept;
-  if (_pendingAvatarDataUrl)  data.avatarUrl      = _pendingAvatarDataUrl;
-  else if (urlVal)            data.avatarUrl      = urlVal;
-  if (voice)                  data.preferredVoice = voice;
+  if (name)  data.displayName    = name;
+  if (title) data.formalTitle    = title;
+  if (dept)  data.department     = dept;
+  if (urlVal) data.avatarUrl     = urlVal;
+  if (voice) data.preferredVoice = voice;
 
   try {
     await saveUserProfile(st.currentUser.uid, data);
     st.firestoreProfile = { ...(st.firestoreProfile || {}), ...data };
     if (voice) setActiveVoice(voice);
-    _pendingAvatarDataUrl = null;
     st.editingProfile = false;
     render();
     _showToast('Profile saved!');

@@ -2,29 +2,6 @@
    Chat — AI Chat Interface (Column 1)
    ============================================ */
 
-const QUICK_CHIPS = [
-  { label: '📝 Start NOI', prompt: 'Walk me through starting a Notice of Intent' },
-  { label: '💰 Build My Budget', prompt: 'Help me develop a budget and budget justification for my proposal. What do I need to know about effort, IDC, and cost categories?' },
-  { label: '⏰ Timeline Check', prompt: 'What is the internal timeline for submitting a proposal and what are the deadlines I need to hit?' },
-  { label: '✅ Compliance Review', prompt: 'What compliance reviews might my project need — IRB, IACUC, export control, conflict of interest?' },
-  { label: '📊 Effort & Salary', prompt: 'Help me calculate effort and person-months for my proposal. How do academic year, summer, and course release work?' },
-  { label: '🤝 Subaward Help', prompt: 'I have a subrecipient on my proposal. What do I need from them and when?' },
-  { label: '✍️ Write for Reviewers', prompt: 'How do I write my project narrative to score well with reviewers and align with sponsor priorities?' },
-  { label: '📋 Biosketch Format', prompt: 'What biosketch format do I need — NSF SciENcv, NIH, or USDA? How do I create it?' }
-];
-
-function renderQuickChips() {
-  const wrap = document.createElement('div');
-  wrap.className = 'quick-chips';
-  QUICK_CHIPS.forEach(c => {
-    const btn = document.createElement('button');
-    btn.className = 'chip';
-    btn.textContent = c.label;
-    btn.onclick = () => handleChat(c.prompt);
-    wrap.appendChild(btn);
-  });
-  return wrap;
-}
 
 function renderChatMessages() {
   const wrap = document.createElement('div');
