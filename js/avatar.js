@@ -132,15 +132,15 @@ function _renderProfileEditForm(up) {
       </div>
       ${st.firstTimeProfile ? `<p class="pef-welcome">Add a photo so your teammates can recognize you.</p>` : ''}
 
-      <label class="pef-label">Display Name</label>
+      <label class="pef-label" for="pef-name">Display Name</label>
       <input id="pef-name" class="pef-input" value="${safeVal(up.displayName)}"
              placeholder="Preferred first name">
 
-      <label class="pef-label">Formal Title</label>
+      <label class="pef-label" for="pef-ftitle">Formal Title</label>
       <input id="pef-ftitle" class="pef-input" value="${safeVal(up.formalTitle)}"
              placeholder="e.g. Research Operations Manager">
 
-      <label class="pef-label">Department / Unit</label>
+      <label class="pef-label" for="pef-dept">Department / Unit</label>
       <input id="pef-dept" class="pef-input" value="${safeVal(up.department)}"
              placeholder="e.g. CAES · OSP">
 
@@ -161,7 +161,7 @@ function _renderProfileEditForm(up) {
       </div>
       <div id="pefStatus" class="pef-status"></div>
 
-      <label class="pef-label">Preferred Voice</label>
+      <label class="pef-label" for="pef-voice">Preferred Voice</label>
       <select id="pef-voice" class="pef-input pef-select">
         ${(typeof GEMINI_VOICES !== 'undefined' ? GEMINI_VOICES : []).map(v =>
           `<option value="${v.id}" ${(up.preferredVoice === v.id || _activeVoice() === v.id) ? 'selected' : ''}>${v.label} — ${v.desc}</option>`
@@ -305,12 +305,20 @@ async function saveProfileEdit() {
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
 
   const data = {};
-  if (name)                  data.displayName    = name;
-  if (title)                 data.formalTitle    = title;
-  if (dept)                  data.department     = dept;
-  if (_pendingAvatarDataUrl) data.avatarUrl      = _pendingAvatarDataUrl;
-  else if (urlVal)           data.avatarUrl      = urlVal;
-  if (voice)                 data.preferredVoice = voice;
+  if (name)  data.displayName    = name;
+  if (title) data.formalTitle    = title;
+  if (dept)  data.department     = dept;
+  if (voice) data.preferredVoice = voice;
+
+  // Uploaded photos → localStorage (avoids Firestore size limits)
+  // URL photos → Firestore (small string, syncs across devices)
+  if (_pendingAvatarDataUrl) {
+    localStorage.setItem('grant-avatar-' + st.currentUser.uid, _pendingAvatarDataUrl);
+    data.hasCustomAvatar = true;
+  } else if (urlVal) {
+    localStorage.removeItem('grant-avatar-' + st.currentUser.uid);
+    data.avatarUrl = urlVal;
+  }
 
   try {
     await saveUserProfile(st.currentUser.uid, data);

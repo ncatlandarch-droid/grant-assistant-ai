@@ -48,12 +48,15 @@ const GEMINI_VOICES = [
 ];
 
 /* Returns the profile for the currently signed-in user.
-   Priority: Firestore edits (st.firestoreProfile) > static USER_PROFILES > Google Auth data */
+   Avatar priority: localStorage upload > Firestore avatarUrl > hardcoded > Google photo > default */
 function getUserProfile(user) {
   if (!user) return null;
   const email  = user.email?.toLowerCase();
   const known  = USER_PROFILES[email] || {};
   const fs     = (typeof st !== 'undefined' && st.firestoreProfile) || {};
+
+  // Uploaded photos are stored in localStorage to avoid Firestore size limits
+  const localAvatar = localStorage.getItem('grant-avatar-' + user.uid);
 
   const formalTitle = fs.formalTitle || known.formalTitle || '';
   const department  = fs.department  || known.department  || '';
@@ -64,7 +67,7 @@ function getUserProfile(user) {
   return {
     displayName:    fs.displayName    || known.displayName    || user.displayName?.split(' ')[0] || 'Researcher',
     fullName:       fs.fullName       || known.fullName       || user.displayName               || '',
-    avatar:         fs.avatarUrl      || known.avatar         || user.photoURL                  || 'images/grant-avatar.png',
+    avatar:         localAvatar       || fs.avatarUrl         || known.avatar || user.photoURL  || 'images/grant-avatar.png',
     formalTitle,
     department,
     role,

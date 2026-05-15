@@ -153,40 +153,31 @@ function _renderAdminEditForm(p) {
       </div>
 
       <div class="au-edit-form">
-        <label class="pef-label">Display Name</label>
+        <label class="pef-label" for="aue-name">Display Name</label>
         <input id="aue-name" class="pef-input" value="${safeVal(p.displayName || p.googleDisplayName?.split(' ')[0])}"
                placeholder="Preferred first name">
 
-        <label class="pef-label">Full Name</label>
+        <label class="pef-label" for="aue-fullname">Full Name</label>
         <input id="aue-fullname" class="pef-input" value="${safeVal(p.fullName || p.googleDisplayName)}"
                placeholder="Full legal name">
 
-        <label class="pef-label">Formal Title</label>
+        <label class="pef-label" for="aue-title">Formal Title</label>
         <input id="aue-title" class="pef-input" value="${safeVal(p.formalTitle || known.formalTitle)}"
                placeholder="e.g. Research Director">
 
-        <label class="pef-label">Department / Unit</label>
+        <label class="pef-label" for="aue-dept">Department / Unit</label>
         <input id="aue-dept" class="pef-input" value="${safeVal(p.department || known.department)}"
                placeholder="e.g. CAES · OSP">
 
-        <label class="pef-label">Profile Photo</label>
-        <div class="pef-photo-options">
-          <label class="pef-upload-btn">
-            📷 Upload Photo
-            <input type="file" id="aue-file" accept="image/jpeg,image/png,image/webp,image/*"
-                   style="display:none" onchange="handleAvatarFileSelect(this,'auePreview')">
-          </label>
-          <span class="pef-or">or</span>
-          <input id="aue-photo" class="pef-input pef-url-input" value="${safeVal(photoVal)}"
-                 placeholder="Paste an image URL"
-                 oninput="onAvatarUrlInput(this.value,'auePreview','auPreviewImg')">
-        </div>
+        <label class="pef-label" for="aue-photo">Profile Photo URL</label>
+        <input id="aue-photo" class="pef-input" value="${safeVal(photoVal)}"
+               placeholder="Paste an image URL"
+               oninput="onAvatarUrlInput(this.value,'auePreview','auePreviewImg')">
         <div class="pef-photo-preview" id="auePreview" style="display:${photoVal ? 'block' : 'none'}">
           <img id="auePreviewImg" src="${photoVal || ''}">
         </div>
-        <div id="aueStatus" class="pef-status"></div>
 
-        <label class="pef-label">Preferred Voice</label>
+        <label class="pef-label" for="aue-voice">Preferred Voice</label>
         <select id="aue-voice" class="pef-input pef-select">
           ${(typeof GEMINI_VOICES !== 'undefined' ? GEMINI_VOICES : []).map(v =>
             `<option value="${v.id}" ${(p.preferredVoice || known.preferredVoice) === v.id ? 'selected' : ''}>${v.label} — ${v.desc}</option>`
@@ -231,9 +222,8 @@ async function saveAdminUserEdit(uid, email) {
   if (fullName)              data.fullName       = fullName;
   if (title)                 data.formalTitle    = title;
   if (dept)                  data.department     = dept;
-  if (_pendingAvatarDataUrl) data.avatarUrl      = _pendingAvatarDataUrl;
-  else if (photo)            data.avatarUrl      = photo;
-  if (voice)                 data.preferredVoice = voice;
+  if (photo)  data.avatarUrl      = photo;
+  if (voice)  data.preferredVoice = voice;
 
   try {
     await saveUserProfile(uid, data);

@@ -45,11 +45,14 @@ _auth.onAuthStateChanged(async user => {
     });
     st.firestoreProfile = await loadUserProfile(user.uid);
 
-    // First-time photo prompt: show profile setup if no photo is stored yet
+    // First-time photo prompt: show profile setup if no photo is stored anywhere yet
     if (justSignedIn) {
-      const knownProfile = (typeof USER_PROFILES !== 'undefined')
+      const knownProfile  = (typeof USER_PROFILES !== 'undefined')
         ? USER_PROFILES[user.email?.toLowerCase()] : null;
-      const hasPhoto = st.firestoreProfile?.avatarUrl || knownProfile?.avatar;
+      const hasPhoto = localStorage.getItem('grant-avatar-' + user.uid)
+        || st.firestoreProfile?.avatarUrl
+        || st.firestoreProfile?.hasCustomAvatar
+        || knownProfile?.avatar;
       if (!hasPhoto) {
         st.firstTimeProfile = true;
         st.editingProfile   = true;
