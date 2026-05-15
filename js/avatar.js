@@ -178,19 +178,58 @@ async function handleAvatarFileSelect(input, previewId) {
   if (!file) return;
 
   _pendingAvatarDataUrl = null;
-  _setAvatarStatus(previewId, '✨ Granted! is processing your photo…', 'processing');
+  _setAvatarStatus(previewId, 'Preparing photo…', 'processing');
 
+  // Step 1: Always resize with Canvas first — guarantees a small saveable JPEG
+  let resizedDataUrl;
   try {
-    const dataUrl = await _processAvatarWithGemini(file, previewId);
-    _pendingAvatarDataUrl = dataUrl;
+    resizedDataUrl = await _resizeWithCanvas(file);
+  } catch (e) {
+    _setAvatarStatus(previewId, '⚠ Could not read image file', 'warn');
+    return;
+  }
+
+  // Show preview immediately — it's already usable
+  _showAvatarPreview(previewId, resizedDataUrl);
+  _pendingAvatarDataUrl = resizedDataUrl;
+  _setAvatarStatus(previewId, '✨ Enhancing with Granted!…', 'processing');
+
+  // Step 2: Try Gemini background removal on top (enhancement only — not required to save)
+  try {
+    const base64 = resizedDataUrl.split(',')[1];
+    const geminiDataUrl = await _processAvatarWithGemini(base64, 'image/jpeg', previewId);
+    _pendingAvatarDataUrl = geminiDataUrl;
     _setAvatarStatus(previewId, '✓ Photo ready — click Save Changes', 'done');
   } catch (err) {
-    console.warn('Avatar Gemini processing failed, using original:', err);
-    // Fall back to original without processing
-    _pendingAvatarDataUrl = await _readFileAsDataUrl(file);
-    _showAvatarPreview(previewId, _pendingAvatarDataUrl);
-    _setAvatarStatus(previewId, '⚠ Using original photo (processing unavailable)', 'warn');
+    // Canvas version already set — save works fine without Gemini
+    _setAvatarStatus(previewId, '✓ Photo ready — click Save Changes', 'done');
   }
+}
+
+async function _resizeWithCanvas(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const size = 400;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      // White background (handles PNGs with transparency)
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      // Center-crop to square
+      const scale = Math.max(size / img.width, size / img.height);
+      const w = img.width * scale;
+      const h = img.height * scale;
+      ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('load failed')); };
+    img.src = url;
+  });
 }
 
 function onAvatarUrlInput(url, previewId, imgId) {
@@ -206,12 +245,11 @@ function onAvatarUrlInput(url, previewId, imgId) {
   }
 }
 
-async function _processAvatarWithGemini(file, previewId) {
-  const base64 = await _readFileAsBase64(file);
+async function _processAvatarWithGemini(base64, mimeType, previewId) {
   const resp = await fetch('/.netlify/functions/process-avatar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ imageData: base64, mimeType: file.type || 'image/jpeg' })
+    body: JSON.stringify({ imageData: base64, mimeType: mimeType || 'image/jpeg' })
   });
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   const result = await resp.json();

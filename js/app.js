@@ -227,7 +227,7 @@ function renderDashboard() {
       <div class="pb-icon">💡</div>
       <div class="pb-content">
         <div class="pb-title">Describe your research idea</div>
-        <div class="pb-sub">Grant will match funding opportunities, draft your NOI abstract, flag compliance needs, and build your submission timeline — instantly.</div>
+        <div class="pb-sub">Granted! will match funding opportunities, draft your NOI abstract, flag compliance needs, and build your submission timeline — instantly.</div>
         <div class="pb-input-wrap">
           <textarea id="ideaInput" class="pb-input" rows="2"
             placeholder="e.g. I want to study the impact of cover crops on soil carbon sequestration in small farms across the Southeast..."></textarea>
