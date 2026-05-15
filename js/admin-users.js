@@ -216,6 +216,14 @@ async function saveAdminUserEdit(uid, email) {
   if (!uid) return;
 
   const saveBtn = document.querySelector('.pef-actions .btn-primary');
+  const _resetBtn = () => { if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Changes'; } };
+
+  if (_pendingAvatarDataUrl && _pendingAvatarDataUrl.length > 700000) {
+    _resetBtn();
+    _showToast('Photo is too large — please crop it smaller and try again.', true);
+    return;
+  }
+
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
 
   const data = {};
@@ -238,6 +246,7 @@ async function saveAdminUserEdit(uid, email) {
     _showToast('Profile saved!');
   } catch (e) {
     console.error('Admin profile save failed:', e);
-    _showToast('Save failed — check your connection and try again.', true);
+    _resetBtn();
+    _showToast(`Save failed: ${e.message || 'check console for details'}`, true);
   }
 }
