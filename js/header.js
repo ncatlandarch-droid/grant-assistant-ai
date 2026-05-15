@@ -49,7 +49,7 @@ function renderHeader() {
       <!-- AI Tool Badge + Name -->
       <div class="brand-title-wrap">
         <span class="brand-ai-badge">AI</span>
-        <span class="brand-tool-name">Grant <span>Assistant</span></span>
+        <span class="brand-tool-name">Granted! <span>AI Grant Assistant</span></span>
       </div>
 
     </div>

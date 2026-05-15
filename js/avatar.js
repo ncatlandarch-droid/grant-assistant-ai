@@ -119,7 +119,12 @@ function _renderModeChips() {
 
 function _renderProfileEditForm(up) {
   const safeVal = v => (v || '').replace(/"/g, '&quot;');
-  const photoVal = up.avatar && !up.avatar.startsWith('images/') ? safeVal(up.avatar) : '';
+  // Never put data: URLs into a text field — only show http/https URLs
+  const isDataUrl = up.avatar?.startsWith('data:');
+  const photoVal  = (up.avatar && !up.avatar.startsWith('images/') && !isDataUrl)
+    ? safeVal(up.avatar) : '';
+  const showPreview = !!(photoVal || isDataUrl);
+  const previewSrc  = isDataUrl ? up.avatar : (photoVal || '');
   return `
     <div class="profile-edit-form">
       <div class="pef-header">
@@ -151,8 +156,8 @@ function _renderProfileEditForm(up) {
                placeholder="paste a URL"
                oninput="onAvatarUrlInput(this.value,'pefPreview','pefPreviewImg')">
       </div>
-      <div class="pef-photo-preview" id="pefPreview" style="display:${photoVal ? 'block' : 'none'}">
-        <img id="pefPreviewImg" src="${photoVal || ''}" onerror="this.parentElement.style.display='none'">
+      <div class="pef-photo-preview" id="pefPreview" style="display:${showPreview ? 'block' : 'none'}">
+        <img id="pefPreviewImg" src="${previewSrc}" onerror="this.parentElement.style.display='none'">
       </div>
       <div id="pefStatus" class="pef-status"></div>
 
@@ -212,7 +217,7 @@ async function _resizeWithCanvas(file) {
     const url = URL.createObjectURL(file);
     img.onload = () => {
       URL.revokeObjectURL(url);
-      const size = 400;
+      const size = 240;
       const canvas = document.createElement('canvas');
       canvas.width = size;
       canvas.height = size;
@@ -225,7 +230,7 @@ async function _resizeWithCanvas(file) {
       const w = img.width * scale;
       const h = img.height * scale;
       ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
-      resolve(canvas.toDataURL('image/jpeg', 0.82));
+      resolve(canvas.toDataURL('image/jpeg', 0.72));
     };
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('load failed')); };
     img.src = url;
@@ -320,9 +325,10 @@ async function saveProfileEdit() {
     _pendingAvatarDataUrl = null;
     st.editingProfile = false;
     render();
+    _showToast('Profile saved!');
   } catch (e) {
     console.error('Profile save failed:', e);
-    alert('Could not save profile. Please try again.');
+    _showToast('Save failed — check your connection and try again.', true);
   }
 }
 
@@ -351,4 +357,20 @@ function changeVoice(voiceName) {
   const preview = `Voice changed to ${voiceName}. How does this sound?`;
   GRANT_TTS.stop();
   GRANT_TTS.speak(preview);
+}
+
+function _showToast(msg, isError = false) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = `
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:${isError ? '#f87171' : 'var(--caes-green-mid)'};
+    color:#fff; font-size:0.82rem; font-weight:600;
+    padding:10px 22px; border-radius:100px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.3);
+    z-index:9999; pointer-events:none;
+    animation: toastIn 0.2s ease;
+  `;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2800);
 }

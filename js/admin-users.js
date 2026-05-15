@@ -126,8 +126,11 @@ function _renderAdminEditForm(p) {
   const name    = _resolveUserName(p);
   const role    = _resolveUserRole(p);
   const known   = USER_PROFILES[p.email?.toLowerCase()] || {};
-  const avatar  = _resolveUserAvatar(p);
-  const photoVal = (p.avatarUrl || (known.avatar && !known.avatar.startsWith('images/') ? known.avatar : '')) || '';
+  const avatar   = _resolveUserAvatar(p);
+  // Never put data: URLs into a text input — only http/https URLs
+  const isDataUrl = p.avatarUrl?.startsWith('data:');
+  const photoVal  = (p.avatarUrl && !isDataUrl) ? p.avatarUrl
+    : (known.avatar && !known.avatar.startsWith('images/') && !known.avatar?.startsWith('data:') ? known.avatar : '');
   const safeVal = v => (v || '').replace(/"/g, '&quot;');
 
   el.innerHTML = `
@@ -229,8 +232,9 @@ async function saveAdminUserEdit(uid, email) {
     _pendingAvatarDataUrl = null;
     st.adminEditingUser = null;
     render();
+    _showToast('Profile saved!');
   } catch (e) {
     console.error('Admin profile save failed:', e);
-    alert('Could not save. Please try again.');
+    _showToast('Save failed — check your connection and try again.', true);
   }
 }
