@@ -4,7 +4,11 @@
    Proxied via /.netlify/functions/gemini-tts
    ============================================ */
 
-const VOICE_NAME = 'Charon';
+// Voice is dynamic — reads from localStorage (set by user picker or user-profiles.js)
+// Falls back to Charon if nothing stored yet.
+function _activeVoice() {
+  return localStorage.getItem('grant-tts-voice') || 'Charon';
+}
 
 // Singleton AudioContext — created on first user gesture, reused forever.
 // This is required because browsers block AudioContext after async gaps.
@@ -70,7 +74,7 @@ const TTS = {
           generationConfig: {
             responseModalities: ['AUDIO'],
             speechConfig: {
-              voiceConfig: { prebuiltVoiceConfig: { voiceName: VOICE_NAME } }
+              voiceConfig: { prebuiltVoiceConfig: { voiceName: _activeVoice() } }
             }
           }
         }

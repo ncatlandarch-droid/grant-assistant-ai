@@ -54,9 +54,131 @@ function launchProposalBuilder() {
   launchWorkflow();
 }
 
+// --- Personal Progress Dashboard (shown when PI is signed in) ---
+function renderPersonalDashboard() {
+  const up    = getUserProfile(st.currentUser);
+  const email = st.currentUser.email?.toLowerCase();
+  const mine  = (st.submissions || []).filter(s => s.piEmail?.toLowerCase() === email);
+  const active = mine.filter(s => s.stage < 12).sort((a, b) => {
+    const da = a.deadline ? new Date(a.deadline).getTime() : Infinity;
+    const db = b.deadline ? new Date(b.deadline).getTime() : Infinity;
+    return da - db;
+  });
+  const totalFunding = mine.reduce((n, s) => n + (s.estimatedFunding || 0), 0);
+  const nextDue      = active.find(s => s.deadline);
+  const nextDueStr   = nextDue ? getDaysRemaining(nextDue.deadline) : '—';
+  const isNextUrgent = nextDueStr.includes('⚠️') || nextDueStr.includes('overdue');
+
+  const el = document.createElement('div');
+  el.className = 'upd-wrap';
+
+  el.innerHTML = `
+    <div class="upd-header">
+      <div class="upd-welcome">
+        <img src="${up.avatar}" class="upd-avatar" onerror="this.src='images/grant-avatar.png'" alt="${up.displayName}">
+        <div>
+          <div class="upd-name">Welcome back, ${up.displayName}</div>
+          <div class="upd-role">${up.role}</div>
+        </div>
+      </div>
+      <div class="upd-stats">
+        <div class="upd-stat">
+          <div class="upd-stat-val">${active.length}</div>
+          <div class="upd-stat-label">Active</div>
+        </div>
+        <div class="upd-stat">
+          <div class="upd-stat-val">${mine.filter(s => s.stage === 12).length}</div>
+          <div class="upd-stat-label">Submitted</div>
+        </div>
+        <div class="upd-stat">
+          <div class="upd-stat-val" style="color:var(--aggie-gold)">$${(totalFunding/1000).toFixed(0)}K</div>
+          <div class="upd-stat-label">Total Requested</div>
+        </div>
+        <div class="upd-stat">
+          <div class="upd-stat-val" style="${isNextUrgent ? 'color:#f87171' : ''}">${nextDueStr}</div>
+          <div class="upd-stat-label">Next Deadline</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  if (mine.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'upd-empty';
+    empty.innerHTML = `
+      <div>📝</div>
+      <div>No proposals yet</div>
+      <button class="btn btn-primary" style="margin-top:10px" onclick="setView('noi-wizard')">Submit Your First NOI →</button>
+    `;
+    el.appendChild(empty);
+    return el;
+  }
+
+  const list = document.createElement('div');
+  list.className = 'upd-list';
+
+  const display = mine.slice(0, 5);
+  display.forEach(sub => {
+    const stage     = PIPELINE_STAGES.find(s => s.id === sub.stage);
+    const pct       = Math.round((sub.stage / 12) * 100);
+    const daysStr   = sub.deadline ? getDaysRemaining(sub.deadline) : null;
+    const isUrgent  = daysStr && (daysStr.includes('⚠️') || daysStr.includes('overdue'));
+    const noteCount = sub.notes?.length || 0;
+    const card      = document.createElement('div');
+    card.className  = 'upd-card' + (isUrgent ? ' upd-card-urgent' : '');
+    card.onclick    = () => { st.activeOpportunity = sub.id; setView('pipeline'); };
+    card.innerHTML  = `
+      <div class="upd-card-top">
+        <div class="upd-card-title">${sub.title.substring(0, 58)}${sub.title.length > 58 ? '…' : ''}</div>
+        <div class="upd-stage-badge" style="background:${stage?.color || '#888'}22;color:${stage?.color || '#888'};border:1px solid ${stage?.color || '#888'}44">
+          ${sub.stage} · ${stage?.short || sub.status}
+        </div>
+      </div>
+      <div class="upd-card-meta">
+        <span>${sub.sponsor}${sub.program ? ' · ' + sub.program : ''}</span>
+        <span style="color:var(--aggie-gold);font-weight:700">$${(sub.estimatedFunding/1000).toFixed(0)}K</span>
+        ${daysStr ? `<span style="${isUrgent ? 'color:#f87171' : 'color:var(--text-muted)'}">${daysStr}</span>` : ''}
+        ${noteCount > 0 ? `<span style="color:var(--aggie-gold)">💬 ${noteCount} OSP note${noteCount !== 1 ? 's' : ''}</span>` : ''}
+      </div>
+      <div class="upd-progress-track">
+        <div class="upd-progress-fill" style="width:${pct}%;background:${stage?.color || 'var(--caes-green-mid)'}"></div>
+      </div>
+      <div class="upd-card-footer">${pct}% through review · View details →</div>
+    `;
+    list.appendChild(card);
+  });
+
+  el.appendChild(list);
+
+  if (mine.length > 5) {
+    const more = document.createElement('button');
+    more.className = 'upd-more-btn';
+    more.textContent = `+ ${mine.length - 5} more proposals`;
+    more.onclick = () => setView('pipeline');
+    el.appendChild(more);
+  }
+
+  const actions = document.createElement('div');
+  actions.className = 'upd-actions';
+  actions.innerHTML = `
+    <button class="btn btn-primary btn-sm" onclick="setView('noi-wizard')">+ New NOI</button>
+    <button class="btn btn-secondary btn-sm" onclick="setView('pipeline')">View All My Proposals</button>
+    <button class="btn btn-secondary btn-sm" onclick="setView('opportunities')">Browse Funding</button>
+  `;
+  el.appendChild(actions);
+
+  return el;
+}
+
 // --- Dashboard ---
 function renderDashboard() {
   const el = document.createElement('div');
+
+  // Signed-in PI: personal progress section at top
+  if (st.currentUser && !st.isAdmin) {
+    el.appendChild(renderPersonalDashboard());
+  }
+
   const stats = computeOppStats();
   const active = OPPORTUNITIES_DATA.filter(o => o.stage < 12);
   const inst = window.INSTITUTION_CONFIG?.institution;
