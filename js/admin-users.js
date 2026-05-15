@@ -227,7 +227,7 @@ async function saveAdminUserEdit(uid, email) {
   try {
     await saveUserProfile(uid, data);
     if (st.currentUser?.uid === uid) {
-      st.firestoreProfile = { ...(st.firestoreProfile || {}), ...data };
+      st.firestoreProfile = await loadUserProfile(uid);
     }
     _pendingAvatarDataUrl = null;
     st.adminEditingUser   = null;

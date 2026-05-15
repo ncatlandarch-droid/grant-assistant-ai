@@ -302,7 +302,7 @@ async function saveProfileEdit() {
 
   try {
     await saveUserProfile(st.currentUser.uid, data);
-    st.firestoreProfile = { ...(st.firestoreProfile || {}), ...data };
+    st.firestoreProfile    = await loadUserProfile(st.currentUser.uid);
     if (voice) setActiveVoice(voice);
     _pendingAvatarDataUrl  = null;
     st.editingProfile      = false;
