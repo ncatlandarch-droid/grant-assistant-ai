@@ -2445,6 +2445,149 @@ input, select, textarea { font-family: inherit; }
 .note-input::placeholder { color: var(--text-muted); }
 
 /* ================================================================
+   ADMIN TEAM DIRECTORY
+   ================================================================ */
+
+.admin-user-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.au-loading {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 20px 0;
+}
+
+.au-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.2s;
+}
+.au-card:hover { border-color: rgba(253,185,39,0.3); }
+
+.au-card-top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.au-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(253,185,39,0.35);
+  flex-shrink: 0;
+}
+
+.au-info { flex: 1; min-width: 0; }
+
+.au-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.au-role {
+  font-size: 0.75rem;
+  color: var(--caes-green-mid);
+  margin-bottom: 3px;
+  font-weight: 500;
+}
+
+.au-email {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+
+.au-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.au-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Admin Edit Form ── */
+.au-edit-wrap {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 28px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+}
+
+@media (max-width: 800px) {
+  .au-edit-wrap { grid-template-columns: 1fr; }
+}
+
+.au-edit-preview {
+  text-align: center;
+}
+
+.au-edit-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(253,185,39,0.4);
+  margin-bottom: 12px;
+}
+
+.au-edit-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.au-edit-role {
+  font-size: 0.75rem;
+  color: var(--caes-green-mid);
+  font-weight: 500;
+}
+
+.au-edit-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Pipeline user filter banner */
+.pipeline-user-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(253,185,39,0.08);
+  border: 1px solid rgba(253,185,39,0.25);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+/* ================================================================
    USER PROGRESS DASHBOARD
    ================================================================ */
 

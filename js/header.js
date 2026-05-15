@@ -61,6 +61,12 @@ function renderHeader() {
           ${t.label}
         </button>
       `).join('')}
+      ${st.isAdmin ? `
+        <button class="nav-tab ${st.view === 'team-members' ? 'active' : ''}"
+                onclick="setView('team-members')" id="tab-team-members">
+          👥 Team
+        </button>
+      ` : ''}
     </nav>
 
     <div class="header-admin">

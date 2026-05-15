@@ -142,6 +142,11 @@ async function loadUserProfile(uid) {
   return doc.exists ? doc.data() : null;
 }
 
+async function loadAllUserProfiles() {
+  const snap = await db.collection(USERS_COL).orderBy('lastSeen', 'desc').get();
+  return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+}
+
 function sendEmail(type, data) {
   return fetch('/.netlify/functions/send-email', {
     method: 'POST',

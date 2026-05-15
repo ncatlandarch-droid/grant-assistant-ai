@@ -23,8 +23,10 @@ const st = {
   workflowMatches:  [],
   workflowResult:   null,
   workflowLoading:  false,
-  firestoreProfile: null,
-  editingProfile:   false
+  firestoreProfile:  null,
+  editingProfile:    false,
+  adminUserFilter:   null,   // email — pipeline shows only this user's proposals
+  adminEditingUser:  null    // profile object being edited by admin
 };
 
 // --- DOM Helper ---
@@ -444,6 +446,7 @@ function render() {
     case 'pipeline':       workspace.appendChild(renderPipeline()); break;
     case 'noi-wizard':     workspace.appendChild(renderNOIWizard()); break;
     case 'resources':      workspace.appendChild(renderResources()); break;
+    case 'team-members':   workspace.appendChild(renderAdminUsers()); break;
     default:               workspace.appendChild(renderDashboard());
   }
   body.appendChild(workspace);

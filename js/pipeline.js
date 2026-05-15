@@ -17,9 +17,16 @@ function renderPipeline() {
   }
 
   // Merge live Firestore submissions + historical mock data
-  const liveItems = (st.submissions || []);
+  let liveItems = (st.submissions || []);
   const mockItems = OPPORTUNITIES_DATA.map(o => ({ ...o, isLive: false }));
-  const allItems  = [...liveItems, ...mockItems];
+  let allItems  = [...liveItems, ...mockItems];
+
+  // Admin user filter — narrow to one user's proposals
+  const userFilter = st.adminUserFilter;
+  if (userFilter) {
+    liveItems = liveItems.filter(s => s.piEmail?.toLowerCase() === userFilter.toLowerCase());
+    allItems  = liveItems; // filtered view shows only live submissions for that user
+  }
 
   const activeItem = st.activeOpportunity
     ? allItems.find(o => o.id === st.activeOpportunity)
@@ -38,6 +45,12 @@ function renderPipeline() {
 
   const liveCount = liveItems.length;
   el.innerHTML = `
+    ${userFilter ? `
+      <div class="pipeline-user-filter-bar">
+        <span>📋 Showing proposals for <strong>${userFilter}</strong></span>
+        <button class="btn btn-secondary btn-sm" onclick="st.adminUserFilter=null; render()">✕ Clear Filter</button>
+      </div>
+    ` : ''}
     <div class="section-header">
       <h2>📋 Grant <span>Pipeline</span></h2>
       <div style="display:flex;gap:8px;align-items:center">

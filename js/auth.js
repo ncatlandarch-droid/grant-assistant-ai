@@ -27,7 +27,15 @@ _auth.onAuthStateChanged(async user => {
   st.isAdmin     = user ? ADMIN_EMAILS.includes(user.email?.toLowerCase()) : false;
 
   if (user) {
-    // Load any Firestore profile edits (name, title, department, photo URL)
+    // Auto-register in users collection so admin directory stays current
+    await saveUserProfile(user.uid, {
+      uid:               user.uid,
+      email:             user.email || '',
+      googleDisplayName: user.displayName || '',
+      googlePhotoURL:    user.photoURL    || '',
+      lastSeen:          new Date().toISOString()
+    });
+    // Load any custom profile edits (name, title, department, photo URL)
     st.firestoreProfile = await loadUserProfile(user.uid);
   } else {
     st.firestoreProfile = null;
