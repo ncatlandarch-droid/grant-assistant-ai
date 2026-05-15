@@ -292,6 +292,9 @@ async function saveProfileEdit() {
 
   if (!st.currentUser) return;
 
+  const saveBtn = document.querySelector('.pef-actions .btn-primary');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+
   const data = {};
   if (name)                  data.displayName    = name;
   if (title)                 data.formalTitle    = title;
