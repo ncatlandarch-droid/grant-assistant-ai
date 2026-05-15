@@ -22,8 +22,16 @@ function signOutAdmin() {
 }
 
 // Fires immediately on load (null if not signed in), then on every auth change
-_auth.onAuthStateChanged(user => {
+_auth.onAuthStateChanged(async user => {
   st.currentUser = user || null;
   st.isAdmin     = user ? ADMIN_EMAILS.includes(user.email?.toLowerCase()) : false;
+
+  if (user) {
+    // Load any Firestore profile edits (name, title, department, photo URL)
+    st.firestoreProfile = await loadUserProfile(user.uid);
+  } else {
+    st.firestoreProfile = null;
+  }
+
   render();
 });

@@ -22,7 +22,9 @@ const st = {
   workflowQuery:    '',
   workflowMatches:  [],
   workflowResult:   null,
-  workflowLoading:  false
+  workflowLoading:  false,
+  firestoreProfile: null,
+  editingProfile:   false
 };
 
 // --- DOM Helper ---

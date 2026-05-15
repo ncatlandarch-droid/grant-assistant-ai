@@ -384,6 +384,25 @@ input, select, textarea { font-family: inherit; }
   margin-bottom: 10px;
 }
 
+.avatar-dept {
+  font-size: 0.71rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  text-align: center;
+}
+
+.profile-edit-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  opacity: 0.5;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: opacity 0.15s;
+}
+.profile-edit-btn:hover { opacity: 1; }
+
 /* "Grant · AI Grant Assistant" tag shown when user is logged in */
 .avatar-assistant-tag {
   display: flex;
@@ -435,6 +454,92 @@ input, select, textarea { font-family: inherit; }
   max-width: 160px;
 }
 .voice-picker-select:focus { border-color: var(--aggie-gold); }
+
+/* ── Profile Edit Form ── */
+.profile-edit-form {
+  padding: 4px 2px 8px;
+}
+
+.pef-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.pef-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.pef-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+.pef-close:hover { color: var(--text-primary); }
+
+.pef-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 10px 0 4px;
+}
+
+.pef-hint {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.pef-input {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-family: inherit;
+  padding: 6px 9px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.pef-input:focus { border-color: var(--aggie-gold); }
+.pef-input::placeholder { color: var(--text-muted); }
+
+.pef-select { cursor: pointer; }
+
+.pef-photo-preview {
+  margin-top: 6px;
+  text-align: center;
+}
+.pef-photo-preview img {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(253,185,39,0.4);
+}
+
+.pef-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
 
 /* Mode chips */
 .quick-chips {

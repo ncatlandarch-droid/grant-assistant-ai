@@ -129,6 +129,19 @@ async function addNote(id, text, author) {
   });
 }
 
+// ── User Profiles (stored in Firestore so edits persist across devices) ──────
+
+const USERS_COL = 'users';
+
+async function saveUserProfile(uid, data) {
+  await db.collection(USERS_COL).doc(uid).set(data, { merge: true });
+}
+
+async function loadUserProfile(uid) {
+  const doc = await db.collection(USERS_COL).doc(uid).get();
+  return doc.exists ? doc.data() : null;
+}
+
 function sendEmail(type, data) {
   return fetch('/.netlify/functions/send-email', {
     method: 'POST',

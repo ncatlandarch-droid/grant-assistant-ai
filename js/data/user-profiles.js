@@ -7,19 +7,32 @@
 
 const USER_PROFILES = {
   'crnicholson1@ncat.edu': {
-    displayName: 'Cathy',
-    fullName:    'Cathy Nicholson',
-    avatar:      'images/Cathy Avatar Image.png',
-    role:        'Grant Administrator · CAES',
+    displayName:    'Cathy',
+    fullName:       'Cathy Nicholson',
+    avatar:         'images/Cathy Avatar Image.png',
+    formalTitle:    'Grant Administrator',
+    department:     'CAES · Office of Sponsored Programs',
+    role:           'Grant Administrator · CAES',
     preferredVoice: 'Aoede'
   },
   'ncatlandarch@gmail.com': {
-    displayName: 'Chris',
-    fullName:    'Chris Hopper',
-    avatar:      null,   // uses Google profile photo
-    role:        'Director · SFRIC',
+    displayName:    'Chris',
+    fullName:       'Chris Hopper',
+    avatar:         null,   // uses Google profile photo
+    formalTitle:    'Research Operations Manager',
+    department:     'SFRIC',
+    role:           'Research Operations Manager · SFRIC',
     preferredVoice: 'Charon'
   }
+  // To add Charlie: uncomment and fill in his NC A&T email
+  // 'charlie@ncat.edu': {
+  //   displayName:    'Charlie',
+  //   fullName:       'Charlie [LastName]',
+  //   formalTitle:    'Research Director',
+  //   department:     'CAES',
+  //   role:           'Research Director · CAES',
+  //   preferredVoice: 'Charon'
+  // }
 };
 
 /* Available Gemini TTS voices.
@@ -35,17 +48,27 @@ const GEMINI_VOICES = [
 ];
 
 /* Returns the profile for the currently signed-in user.
-   Falls back gracefully for unknown users. */
+   Priority: Firestore edits (st.firestoreProfile) > static USER_PROFILES > Google Auth data */
 function getUserProfile(user) {
   if (!user) return null;
-  const email   = user.email?.toLowerCase();
-  const known   = USER_PROFILES[email] || {};
+  const email  = user.email?.toLowerCase();
+  const known  = USER_PROFILES[email] || {};
+  const fs     = (typeof st !== 'undefined' && st.firestoreProfile) || {};
+
+  const formalTitle = fs.formalTitle || known.formalTitle || '';
+  const department  = fs.department  || known.department  || '';
+  const role = (formalTitle || department)
+    ? [formalTitle, department].filter(Boolean).join(' · ')
+    : (known.role || 'NC A&T Researcher');
+
   return {
-    displayName:    known.displayName    || user.displayName?.split(' ')[0] || 'Researcher',
-    fullName:       known.fullName       || user.displayName               || '',
-    avatar:         known.avatar         || user.photoURL                  || 'images/grant-avatar.png',
-    role:           known.role           || 'NC A&T Researcher',
-    preferredVoice: known.preferredVoice || null
+    displayName:    fs.displayName    || known.displayName    || user.displayName?.split(' ')[0] || 'Researcher',
+    fullName:       fs.fullName       || known.fullName       || user.displayName               || '',
+    avatar:         fs.avatarUrl      || known.avatar         || user.photoURL                  || 'images/grant-avatar.png',
+    formalTitle,
+    department,
+    role,
+    preferredVoice: fs.preferredVoice || known.preferredVoice || null
   };
 }
 
