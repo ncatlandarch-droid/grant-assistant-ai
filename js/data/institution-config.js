@@ -37,11 +37,11 @@ const INSTITUTION_CONFIG = {
 
   // ── AI Assistant Persona ──────────────────────────────────
   assistant: {
-    name:    'Grant',
+    name:    'Granted!',
     role:    'AI Grant Assistant',
     image:   'images/grant-avatar.png',
     voice:   'Charon',   // Gemini TTS voice — warm professional male
-    greeting: "Welcome! I'm Grant, your AI Grant Assistant for NC A&T CAES. I can help you find funding opportunities, navigate the NOI process, build budgets, and ensure compliance. What would you like to work on today?",
+    greeting: "Hello! I'm Granted!, your AI Grant Assistant for NC A&T CAES. I can help you find funding opportunities, navigate the NOI process, build budgets, and ensure compliance. What would you like to work on today?",
     modes: [
       { id: 'coach',      label: 'Grant Coach',     desc: 'General guidance and process navigation' },
       { id: 'budget',     label: 'Budget Advisor',  desc: 'Budget development and IDC calculations' },
@@ -51,7 +51,7 @@ const INSTITUTION_CONFIG = {
     // Pre-recorded coaching keys → matching WAV files in assets/audio/
     // Add en-<key>.wav files to enable instant zero-latency playback
     coachingMessages: {
-      welcome:     "Welcome! I'm Grant, your AI Grant Assistant for NC A&T. How can I help you today?",
+      welcome:     "Hello! I'm Granted!, your AI Grant Assistant for NC A&T. How can I help you today?",
       keyAdded:    "Gemini API key saved. AI-powered grant coaching is now active.",
       modeCoach:   "Grant Coach mode. I'm here for general guidance and process navigation.",
       modeBudget:  "Budget Advisor mode. Let's work on budgets and IDC calculations.",

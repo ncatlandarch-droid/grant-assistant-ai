@@ -377,11 +377,11 @@ input, select, textarea { font-family: inherit; }
   margin-top: 3px; letter-spacing: 0.3px; font-weight: 500;
 }
 
-/* User-logged-in avatar — slightly smaller to make room */
+/* User-logged-in avatar — same size as Granted! avatar */
 .user-avatar-wrap {
-  width: 100px;
-  height: 100px;
-  margin-bottom: 10px;
+  width: 228px;
+  height: 228px;
+  margin-bottom: 16px;
 }
 
 .avatar-dept {
@@ -444,7 +444,7 @@ input, select, textarea { font-family: inherit; }
   background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: 6px;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-size: 0.72rem;
   font-family: inherit;
   padding: 4px 8px;
@@ -453,6 +453,7 @@ input, select, textarea { font-family: inherit; }
   transition: border-color 0.15s;
   max-width: 160px;
 }
+.voice-picker-select option { background: #0d1f35; color: var(--text-primary); }
 .voice-picker-select:focus { border-color: var(--aggie-gold); }
 
 /* ── Profile Edit Form ── */
@@ -507,7 +508,7 @@ input, select, textarea { font-family: inherit; }
 
 .pef-input {
   width: 100%;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.07);
   border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--text-primary);
@@ -520,20 +521,68 @@ input, select, textarea { font-family: inherit; }
 }
 .pef-input:focus { border-color: var(--aggie-gold); }
 .pef-input::placeholder { color: var(--text-muted); }
+.pef-input option { background: #0d1f35; color: var(--text-primary); }
 
 .pef-select { cursor: pointer; }
 
+/* Photo upload + URL row */
+.pef-photo-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.pef-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(253,185,39,0.1);
+  border: 1px solid rgba(253,185,39,0.3);
+  border-radius: 6px;
+  color: var(--aggie-gold);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.pef-upload-btn:hover { background: rgba(253,185,39,0.18); }
+
+.pef-or {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.pef-url-input {
+  flex: 1;
+  min-width: 100px;
+}
+
 .pef-photo-preview {
-  margin-top: 6px;
+  margin-bottom: 6px;
   text-align: center;
 }
 .pef-photo-preview img {
-  width: 56px;
-  height: 56px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid rgba(253,185,39,0.4);
 }
+
+.pef-status {
+  font-size: 0.72rem;
+  min-height: 16px;
+  margin-bottom: 4px;
+}
+.pef-status-processing { color: var(--aggie-gold); }
+.pef-status-done       { color: var(--caes-green-mid); }
+.pef-status-warn       { color: #fbbf24; }
 
 .pef-actions {
   display: flex;

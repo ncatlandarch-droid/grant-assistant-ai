@@ -4,9 +4,13 @@
    ============================================ */
 
 const _A = (window.INSTITUTION_CONFIG?.assistant) || {
-  name: 'Grant', role: 'AI Grant Assistant',
-  image: 'images/grant-avatar.png', greeting: "Welcome! I'm Grant.", modes: []
+  name: 'Granted!', role: 'AI Grant Assistant',
+  image: 'images/grant-avatar.png',
+  greeting: "Hello! I'm Granted!, your AI Grant Assistant.", modes: []
 };
+
+// Holds a processed image data-URL between file-pick and save
+let _pendingAvatarDataUrl = null;
 
 function renderAvatarPanel() {
   const panel = document.createElement('aside');
@@ -16,10 +20,9 @@ function renderAvatarPanel() {
   profile.className = 'avatar-profile';
 
   if (st.currentUser) {
-    // ── Logged-in: show the user's profile ──────────────────
     const up = getUserProfile(st.currentUser);
 
-    // Set the active voice to this user's preference on first login
+    // Set preferred voice on first login
     const stored = localStorage.getItem('grant-tts-voice');
     if (!stored && up.preferredVoice) setActiveVoice(up.preferredVoice);
 
@@ -35,7 +38,7 @@ function renderAvatarPanel() {
         <div class="avatar-name-row">
           <span class="avatar-name">${up.displayName}</span>
           <button class="voice-badge" onclick="GRANT_TTS.toggleMute()" title="Toggle voice on/off">🔊</button>
-          <button class="profile-edit-btn" onclick="st.editingProfile=true; render()" title="Edit profile">✏️</button>
+          <button class="profile-edit-btn" onclick="st.editingProfile=true; _pendingAvatarDataUrl=null; render()" title="Edit profile">✏️</button>
         </div>
         <div class="avatar-role">${up.formalTitle || up.role}</div>
         ${up.department ? `<div class="avatar-dept">${up.department}</div>` : ''}
@@ -48,10 +51,9 @@ function renderAvatarPanel() {
       `;
     }
   } else {
-    // ── Not logged in: show the AI assistant avatar ──────────
     profile.innerHTML = `
       <div class="avatar-img-wrap" id="avatarWrap"
-           onclick="handleAvatarClick(event)" title="Click to hear Grant speak" style="cursor:pointer">
+           onclick="handleAvatarClick(event)" title="Click to hear Granted! speak" style="cursor:pointer">
         <img src="${_A.image}" alt="${_A.name}" id="avatarImg">
       </div>
       <div class="avatar-name-row">
@@ -69,7 +71,6 @@ function renderAvatarPanel() {
   panel.appendChild(renderChatMessages());
   panel.appendChild(renderChatInput());
 
-  // Sync mute badge + voice select after render
   requestAnimationFrame(() => {
     document.querySelectorAll('.voice-badge').forEach(el => {
       el.textContent = GRANT_TTS.isMuted() ? '🔇' : '🔊';
@@ -90,7 +91,6 @@ function _renderVoicePicker() {
     { id: 'Puck',   label: 'Puck',   desc: 'Energetic · Friendly'  },
     { id: 'Zephyr', label: 'Zephyr', desc: 'Neutral · Clean'       }
   ];
-
   return `
     <div class="voice-picker-wrap">
       <label class="voice-picker-label">🎙️ Voice</label>
@@ -124,7 +124,7 @@ function _renderProfileEditForm(up) {
     <div class="profile-edit-form">
       <div class="pef-header">
         <span class="pef-title">Edit Profile</span>
-        <button class="pef-close" onclick="st.editingProfile=false; render()">✕</button>
+        <button class="pef-close" onclick="st.editingProfile=false; _pendingAvatarDataUrl=null; render()">✕</button>
       </div>
 
       <label class="pef-label">Display Name</label>
@@ -139,16 +139,22 @@ function _renderProfileEditForm(up) {
       <input id="pef-dept" class="pef-input" value="${safeVal(up.department)}"
              placeholder="e.g. CAES · OSP">
 
-      <label class="pef-label">
-        Photo URL
-        <span class="pef-hint">paste a link to your photo</span>
-      </label>
-      <input id="pef-photo" class="pef-input" value="${photoVal}"
-             placeholder="https://…">
-
-      <div class="pef-photo-preview" id="pefPreview" style="display:${photoVal ? 'block' : 'none'}">
-        <img src="${photoVal || ''}" onerror="this.parentElement.style.display='none'">
+      <label class="pef-label">Profile Photo</label>
+      <div class="pef-photo-options">
+        <label class="pef-upload-btn" title="Granted! will remove the background and create a clean white-background portrait">
+          📷 Upload Photo
+          <input type="file" id="pef-file" accept="image/jpeg,image/png,image/webp,image/*"
+                 style="display:none" onchange="handleAvatarFileSelect(this,'pefPreview')">
+        </label>
+        <span class="pef-or">or</span>
+        <input id="pef-photo" class="pef-input pef-url-input" value="${photoVal}"
+               placeholder="paste a URL"
+               oninput="onAvatarUrlInput(this.value,'pefPreview','pefPreviewImg')">
       </div>
+      <div class="pef-photo-preview" id="pefPreview" style="display:${photoVal ? 'block' : 'none'}">
+        <img id="pefPreviewImg" src="${photoVal || ''}" onerror="this.parentElement.style.display='none'">
+      </div>
+      <div id="pefStatus" class="pef-status"></div>
 
       <label class="pef-label">Preferred Voice</label>
       <select id="pef-voice" class="pef-input pef-select">
@@ -159,32 +165,121 @@ function _renderProfileEditForm(up) {
 
       <div class="pef-actions">
         <button class="btn btn-primary btn-sm" onclick="saveProfileEdit()">Save Changes</button>
-        <button class="btn btn-secondary btn-sm" onclick="st.editingProfile=false; render()">Cancel</button>
+        <button class="btn btn-secondary btn-sm" onclick="st.editingProfile=false; _pendingAvatarDataUrl=null; render()">Cancel</button>
       </div>
     </div>
   `;
 }
 
+// ── Shared helpers used by both self-edit and admin-edit ───────────────────
+
+async function handleAvatarFileSelect(input, previewId) {
+  const file = input.files?.[0];
+  if (!file) return;
+
+  _pendingAvatarDataUrl = null;
+  _setAvatarStatus(previewId, '✨ Granted! is processing your photo…', 'processing');
+
+  try {
+    const dataUrl = await _processAvatarWithGemini(file, previewId);
+    _pendingAvatarDataUrl = dataUrl;
+    _setAvatarStatus(previewId, '✓ Photo ready — click Save Changes', 'done');
+  } catch (err) {
+    console.warn('Avatar Gemini processing failed, using original:', err);
+    // Fall back to original without processing
+    _pendingAvatarDataUrl = await _readFileAsDataUrl(file);
+    _showAvatarPreview(previewId, _pendingAvatarDataUrl);
+    _setAvatarStatus(previewId, '⚠ Using original photo (processing unavailable)', 'warn');
+  }
+}
+
+function onAvatarUrlInput(url, previewId, imgId) {
+  _pendingAvatarDataUrl = null; // URL overrides file upload
+  const preview = document.getElementById(previewId);
+  const img     = document.getElementById(imgId);
+  if (!preview || !img) return;
+  if (url.trim()) {
+    preview.style.display = 'block';
+    img.src = url.trim();
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+async function _processAvatarWithGemini(file, previewId) {
+  const base64 = await _readFileAsBase64(file);
+  const resp = await fetch('/.netlify/functions/process-avatar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ imageData: base64, mimeType: file.type || 'image/jpeg' })
+  });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const result = await resp.json();
+  if (result.error) throw new Error(result.error);
+  const dataUrl = `data:${result.mimeType};base64,${result.imageData}`;
+  _showAvatarPreview(previewId, dataUrl);
+  return dataUrl;
+}
+
+function _readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function _readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function _showAvatarPreview(previewId, dataUrl) {
+  const preview = document.getElementById(previewId);
+  if (!preview) return;
+  preview.style.display = 'block';
+  preview.innerHTML = `<img src="${dataUrl}">`;
+}
+
+function _setAvatarStatus(previewId, msg, type) {
+  // Try the standard status div first, then a fallback based on previewId
+  const statusId = previewId === 'pefPreview' ? 'pefStatus' : 'aueStatus';
+  const el = document.getElementById(statusId);
+  if (el) {
+    el.textContent = msg;
+    el.className = `pef-status pef-status-${type}`;
+  }
+}
+
+// ── Save functions ─────────────────────────────────────────────────────────
+
 async function saveProfileEdit() {
-  const name  = document.getElementById('pef-name')?.value.trim();
-  const title = document.getElementById('pef-ftitle')?.value.trim();
-  const dept  = document.getElementById('pef-dept')?.value.trim();
-  const photo = document.getElementById('pef-photo')?.value.trim();
-  const voice = document.getElementById('pef-voice')?.value;
+  const name   = document.getElementById('pef-name')?.value.trim();
+  const title  = document.getElementById('pef-ftitle')?.value.trim();
+  const dept   = document.getElementById('pef-dept')?.value.trim();
+  const urlVal = document.getElementById('pef-photo')?.value.trim();
+  const voice  = document.getElementById('pef-voice')?.value;
 
   if (!st.currentUser) return;
 
   const data = {};
-  if (name)  data.displayName    = name;
-  if (title) data.formalTitle    = title;
-  if (dept)  data.department     = dept;
-  if (photo) data.avatarUrl      = photo;
-  if (voice) data.preferredVoice = voice;
+  if (name)                   data.displayName    = name;
+  if (title)                  data.formalTitle    = title;
+  if (dept)                   data.department     = dept;
+  if (_pendingAvatarDataUrl)  data.avatarUrl      = _pendingAvatarDataUrl;
+  else if (urlVal)            data.avatarUrl      = urlVal;
+  if (voice)                  data.preferredVoice = voice;
 
   try {
     await saveUserProfile(st.currentUser.uid, data);
     st.firestoreProfile = { ...(st.firestoreProfile || {}), ...data };
     if (voice) setActiveVoice(voice);
+    _pendingAvatarDataUrl = null;
     st.editingProfile = false;
     render();
   } catch (e) {
@@ -193,25 +288,12 @@ async function saveProfileEdit() {
   }
 }
 
-// Live photo preview as user types
-document.addEventListener('input', e => {
-  if (e.target.id === 'pef-photo') {
-    const preview = document.getElementById('pefPreview');
-    if (!preview) return;
-    const url = e.target.value.trim();
-    if (url) {
-      preview.style.display = 'block';
-      preview.querySelector('img').src = url;
-    } else {
-      preview.style.display = 'none';
-    }
-  }
-});
+// ── Other handlers ─────────────────────────────────────────────────────────
 
 function handleAvatarClick() {
   const greeting = st._greeting
     || window.INSTITUTION_CONFIG?.assistant?.greeting
-    || "Hi! I'm Grant, your AI Grant Assistant.";
+    || "Hello! I'm Granted!, your AI Grant Assistant.";
   GRANT_TTS.speak(greeting);
 }
 

@@ -165,13 +165,22 @@ function _renderAdminEditForm(p) {
         <input id="aue-dept" class="pef-input" value="${safeVal(p.department || known.department)}"
                placeholder="e.g. CAES · OSP">
 
-        <label class="pef-label">
-          Photo URL
-          <span class="pef-hint">paste a link to their photo</span>
-        </label>
-        <input id="aue-photo" class="pef-input" value="${safeVal(photoVal)}"
-               placeholder="https://…"
-               oninput="document.getElementById('auPreviewImg').src=this.value||'${avatar}'">
+        <label class="pef-label">Profile Photo</label>
+        <div class="pef-photo-options">
+          <label class="pef-upload-btn" title="Granted! will remove the background and create a clean white-background portrait">
+            📷 Upload Photo
+            <input type="file" id="aue-file" accept="image/jpeg,image/png,image/webp,image/*"
+                   style="display:none" onchange="handleAvatarFileSelect(this,'auePreview')">
+          </label>
+          <span class="pef-or">or</span>
+          <input id="aue-photo" class="pef-input pef-url-input" value="${safeVal(photoVal)}"
+                 placeholder="paste a URL"
+                 oninput="onAvatarUrlInput(this.value,'auePreview','auPreviewImg')">
+        </div>
+        <div class="pef-photo-preview" id="auePreview" style="display:${photoVal ? 'block' : 'none'}">
+          <img id="auePreviewImg" src="${photoVal || ''}">
+        </div>
+        <div id="aueStatus" class="pef-status"></div>
 
         <label class="pef-label">Preferred Voice</label>
         <select id="aue-voice" class="pef-input pef-select">
@@ -203,12 +212,13 @@ async function saveAdminUserEdit(uid, email) {
   if (!uid) return;
 
   const data = {};
-  if (name)     data.displayName    = name;
-  if (fullName) data.fullName       = fullName;
-  if (title)    data.formalTitle    = title;
-  if (dept)     data.department     = dept;
-  if (photo)    data.avatarUrl      = photo;
-  if (voice)    data.preferredVoice = voice;
+  if (name)                   data.displayName    = name;
+  if (fullName)               data.fullName       = fullName;
+  if (title)                  data.formalTitle    = title;
+  if (dept)                   data.department     = dept;
+  if (_pendingAvatarDataUrl)  data.avatarUrl      = _pendingAvatarDataUrl;
+  else if (photo)             data.avatarUrl      = photo;
+  if (voice)                  data.preferredVoice = voice;
 
   try {
     await saveUserProfile(uid, data);
@@ -216,6 +226,7 @@ async function saveAdminUserEdit(uid, email) {
     if (st.currentUser?.uid === uid) {
       st.firestoreProfile = { ...(st.firestoreProfile || {}), ...data };
     }
+    _pendingAvatarDataUrl = null;
     st.adminEditingUser = null;
     render();
   } catch (e) {

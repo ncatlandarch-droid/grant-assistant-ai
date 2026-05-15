@@ -105,6 +105,10 @@ async function generateAIResponse(userText) {
 
 function buildContext() {
   const lines = [];
+  if (st.currentUser) {
+    const up = getUserProfile(st.currentUser);
+    lines.push(`User's name: ${up.displayName} (${up.formalTitle || up.role}) — address them by first name naturally`);
+  }
   lines.push(`Current view: ${st.view}`);
   lines.push(`Avatar mode: ${st.avatarMode}`);
   if (st.activeOpportunity) {
