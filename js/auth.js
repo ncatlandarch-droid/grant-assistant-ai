@@ -45,6 +45,17 @@ _auth.onAuthStateChanged(async user => {
     });
     st.firestoreProfile = await loadUserProfile(user.uid);
 
+    // First-time photo prompt: show profile setup if no photo is stored yet
+    if (justSignedIn) {
+      const knownProfile = (typeof USER_PROFILES !== 'undefined')
+        ? USER_PROFILES[user.email?.toLowerCase()] : null;
+      const hasPhoto = st.firestoreProfile?.avatarUrl || knownProfile?.avatar;
+      if (!hasPhoto) {
+        st.firstTimeProfile = true;
+        st.editingProfile   = true;
+      }
+    }
+
     const up = getUserProfile(user);
     st._greeting = `Welcome back, ${up.displayName}! I'm Granted!, your AI Grant Assistant. What are we working on today?`;
 

@@ -39,7 +39,7 @@ const INSTITUTION_CONFIG = {
   assistant: {
     name:    'Granted!',
     role:    'AI Grant Assistant',
-    image:   'images/Cathy Avatar Image.png',
+    image:   'images/grant-avatar.png',
     voice:   'Aoede',
     greeting: "Hello! I'm Granted!, your AI Grant Assistant for NC A&T CAES. I can help you find funding opportunities, navigate the NOI process, build budgets, and ensure compliance. What would you like to work on today?",
     modes: [],

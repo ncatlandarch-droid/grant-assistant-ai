@@ -127,9 +127,10 @@ function _renderProfileEditForm(up) {
   return `
     <div class="profile-edit-form">
       <div class="pef-header">
-        <span class="pef-title">Edit Profile</span>
-        <button class="pef-close" onclick="st.editingProfile=false; render()">✕</button>
+        <span class="pef-title">${st.firstTimeProfile ? 'Welcome! Set Up Your Profile' : 'Edit Profile'}</span>
+        <button class="pef-close" onclick="st.editingProfile=false; st.firstTimeProfile=false; render()">✕</button>
       </div>
+      ${st.firstTimeProfile ? `<p class="pef-welcome">Add a photo so your teammates can recognize you.</p>` : ''}
 
       <label class="pef-label">Display Name</label>
       <input id="pef-name" class="pef-input" value="${safeVal(up.displayName)}"
@@ -143,13 +144,22 @@ function _renderProfileEditForm(up) {
       <input id="pef-dept" class="pef-input" value="${safeVal(up.department)}"
              placeholder="e.g. CAES · OSP">
 
-      <label class="pef-label">Profile Photo URL</label>
-      <input id="pef-photo" class="pef-input" value="${photoVal}"
-             placeholder="Paste an image URL"
-             oninput="onAvatarUrlInput(this.value,'pefPreview','pefPreviewImg')">
+      <label class="pef-label">Profile Photo</label>
+      <div class="pef-photo-options">
+        <label class="pef-upload-btn">
+          📷 Upload Photo
+          <input type="file" id="pef-file" accept="image/jpeg,image/png,image/webp,image/*"
+                 style="display:none" onchange="handleAvatarFileSelect(this,'pefPreview')">
+        </label>
+        <span class="pef-or">or</span>
+        <input id="pef-photo" class="pef-input pef-url-input" value="${photoVal}"
+               placeholder="Paste an image URL"
+               oninput="onAvatarUrlInput(this.value,'pefPreview','pefPreviewImg')">
+      </div>
       <div class="pef-photo-preview" id="pefPreview" style="display:${showPreview ? 'block' : 'none'}">
         <img id="pefPreviewImg" src="${previewSrc}" onerror="this.parentElement.style.display='none'">
       </div>
+      <div id="pefStatus" class="pef-status"></div>
 
       <label class="pef-label">Preferred Voice</label>
       <select id="pef-voice" class="pef-input pef-select">
@@ -171,33 +181,15 @@ function _renderProfileEditForm(up) {
 async function handleAvatarFileSelect(input, previewId) {
   const file = input.files?.[0];
   if (!file) return;
-
   _pendingAvatarDataUrl = null;
-  _setAvatarStatus(previewId, 'Preparing photo…', 'processing');
-
-  // Step 1: Always resize with Canvas first — guarantees a small saveable JPEG
-  let resizedDataUrl;
+  _setAvatarStatus(previewId, 'Loading photo…', 'processing');
   try {
-    resizedDataUrl = await _resizeWithCanvas(file);
+    const dataUrl = await _resizeWithCanvas(file);
+    _showAvatarPreview(previewId, dataUrl);
+    _pendingAvatarDataUrl = dataUrl;
+    _setAvatarStatus(previewId, '✓ Photo ready — click Save Changes', 'done');
   } catch (e) {
     _setAvatarStatus(previewId, '⚠ Could not read image file', 'warn');
-    return;
-  }
-
-  // Show preview immediately — it's already usable
-  _showAvatarPreview(previewId, resizedDataUrl);
-  _pendingAvatarDataUrl = resizedDataUrl;
-  _setAvatarStatus(previewId, '✨ Enhancing with Granted!…', 'processing');
-
-  // Step 2: Try Gemini background removal on top (enhancement only — not required to save)
-  try {
-    const base64 = resizedDataUrl.split(',')[1];
-    const geminiDataUrl = await _processAvatarWithGemini(base64, 'image/jpeg', previewId);
-    _pendingAvatarDataUrl = geminiDataUrl;
-    _setAvatarStatus(previewId, '✓ Photo ready — click Save Changes', 'done');
-  } catch (err) {
-    // Canvas version already set — save works fine without Gemini
-    _setAvatarStatus(previewId, '✓ Photo ready — click Save Changes', 'done');
   }
 }
 
@@ -301,17 +293,20 @@ async function saveProfileEdit() {
   if (!st.currentUser) return;
 
   const data = {};
-  if (name)  data.displayName    = name;
-  if (title) data.formalTitle    = title;
-  if (dept)  data.department     = dept;
-  if (urlVal) data.avatarUrl     = urlVal;
-  if (voice) data.preferredVoice = voice;
+  if (name)                  data.displayName    = name;
+  if (title)                 data.formalTitle    = title;
+  if (dept)                  data.department     = dept;
+  if (_pendingAvatarDataUrl) data.avatarUrl      = _pendingAvatarDataUrl;
+  else if (urlVal)           data.avatarUrl      = urlVal;
+  if (voice)                 data.preferredVoice = voice;
 
   try {
     await saveUserProfile(st.currentUser.uid, data);
     st.firestoreProfile = { ...(st.firestoreProfile || {}), ...data };
     if (voice) setActiveVoice(voice);
-    st.editingProfile = false;
+    _pendingAvatarDataUrl  = null;
+    st.editingProfile      = false;
+    st.firstTimeProfile    = false;
     render();
     _showToast('Profile saved!');
   } catch (e) {

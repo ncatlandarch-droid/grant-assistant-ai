@@ -578,6 +578,16 @@ input, select, textarea { font-family: inherit; }
   border: 2px solid rgba(253,185,39,0.4);
 }
 
+.pef-welcome {
+  background: rgba(253,185,39,0.12);
+  border-left: 3px solid var(--aggie-gold);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  padding: 7px 10px;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 10px;
+}
+
 .pef-status {
   font-size: 0.72rem;
   min-height: 16px;
