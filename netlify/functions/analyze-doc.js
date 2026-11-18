@@ -1,3 +1,4 @@
+const { generate } = require('../lib/gemini');
 /* ============================================
    Netlify Function — Document Analysis
    Sends a PDF or text to Gemini multimodal
@@ -64,25 +65,18 @@ ${text ? `Research text provided:\n\n${text}\n\n` : ''}Analyze the research ${fi
     contents: [{ parts }],
     generationConfig: {
       temperature: 0.2,
-      maxOutputTokens: 1200,
+      maxOutputTokens: 8192,
       responseMimeType: 'application/json'  // Forces Gemini to return valid JSON
     }
   };
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
   try {
-    const upstream = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    const r = await generate(payload);
+    let data; try { data = JSON.parse(r.text); } catch { data = { raw: r.text }; }
 
-    const data = await upstream.json();
-
-    if (!upstream.ok) {
+    if (r.status < 200 || r.status >= 300) {
       return {
-        statusCode: upstream.status,
+        statusCode: r.status,
         body: JSON.stringify({ error: 'Gemini API error', detail: data })
       };
     }

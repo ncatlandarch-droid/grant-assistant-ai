@@ -1,3 +1,4 @@
+const { generate } = require('../lib/gemini');
 /* ============================================
    Netlify Function — Gemini Avatar Processor
    Accepts an uploaded photo, sends it to Gemini
@@ -27,7 +28,6 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'imageData required' }) };
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
 
   const payload = {
     contents: [{
@@ -49,19 +49,15 @@ exports.handler = async (event) => {
   };
 
   try {
-    const upstream = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    const r = await generate(payload, { kind: 'image' });
 
-    if (!upstream.ok) {
-      const errText = await upstream.text();
+    if (r.status < 200 || r.status >= 300) {
+      const errText = r.text;
       console.error('Gemini avatar error:', errText);
-      return { statusCode: upstream.status, body: JSON.stringify({ error: errText }) };
+      return { statusCode: r.status, body: JSON.stringify({ error: errText }) };
     }
 
-    const data = await upstream.json();
+    const data = JSON.parse(r.text);
     const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
 
     if (!imagePart) {

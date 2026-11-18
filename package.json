@@ -1,0 +1,11 @@
+{
+  "name": "granted",
+  "private": true,
+  "description": "Granted — AI grant assistant. Owned by Think! Design and Planning, LLC.",
+  "scripts": {
+    "check": "node scripts/check-site.mjs",
+    "test:ai": "node scripts/ai-tests.mjs",
+    "deploy:test": "node scripts/check-site.mjs && netlify deploy --build --alias review",
+    "deploy:prod": "node scripts/check-site.mjs && node scripts/ai-tests.mjs && netlify deploy --prod --build"
+  }
+}

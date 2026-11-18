@@ -1,3 +1,4 @@
+const { generate } = require('../lib/gemini');
 /* ============================================
    Netlify Function — Gemini Chat Proxy
    Keeps GEMINI_API_KEY server-side only.
@@ -23,21 +24,12 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON body' }) };
   }
 
-  const model = body.model || 'gemini-2.0-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
+  const r = await generate(body.payload, { kind: 'text' });
   try {
-    const upstream = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body.payload)
-    });
-
-    const data = await upstream.text();
     return {
-      statusCode: upstream.status,
-      headers: { 'Content-Type': 'application/json' },
-      body: data
+      statusCode: r.status,
+      headers: { 'Content-Type': 'application/json', 'X-Gemini-Model': r.model || '' },
+      body: r.text
     };
   } catch (err) {
     return {

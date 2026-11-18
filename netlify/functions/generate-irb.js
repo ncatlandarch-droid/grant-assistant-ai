@@ -1,3 +1,4 @@
+const { generate } = require('../lib/gemini');
 /* ============================================
    Netlify Function — IRB Protocol Draft Generator
    Takes submission data, returns a full IRB
@@ -250,18 +251,12 @@ Step 5: [Debriefing if applicable]
 
   const payload = {
     contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.3, maxOutputTokens: 4000 }
+    generationConfig: { temperature: 0.3, maxOutputTokens: 16384, thinkingConfig: { thinkingLevel: 'minimal' } }
   };
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
   try {
-    const upstream = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await upstream.json();
+    const r = await generate(payload, { hedgeMs: 60000, hardTimeoutMs: 60000 });
+    let data; try { data = JSON.parse(r.text); } catch { data = {}; }
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) return { statusCode: 502, body: JSON.stringify({ error: 'Empty Gemini response' }) };
 
