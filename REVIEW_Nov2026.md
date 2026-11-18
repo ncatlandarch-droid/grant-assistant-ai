@@ -24,3 +24,12 @@ Granted is owned by Think! Design and Planning, LLC. Live at https://thinkgrant.
 
 ## Repo state note
 The working tree has many uncommitted changes from earlier work (about 25 modified files plus new files such as `js/overview.js`, `js/learning-center.js`, `grants-gov.js` and `videos/`). The live site may not match local code. These were left untouched and not committed. The owner should decide whether to commit them before any deploy.
+
+## Update — fixes made 18 Nov 2026 (not yet deployed)
+- **Models:** all functions use `netlify/lib/gemini.js`. `GEMINI_MODEL` defaults to `gemini-3.8-flash` and `GEMINI_FALLBACK_MODEL` to `gemini-3.5-flash`. The fallback is used on 404, 410, 503, a retired-model 400, or a network error. If the main model hasn't answered in 14 s, the backup is asked too. The browser can't choose the model anymore. TTS and image models are configurable (`GEMINI_TTS_MODEL`, `GEMINI_IMAGE_MODEL`); their defaults are 2.5-era models, so check them in AI Studio.
+- **Checks:** `npm run check` runs 246 offline checks and is now the Netlify build command, so a failure blocks the deploy. `npm run test:ai` runs 4 live tests and passed 4/4 on gemini-3.8-flash. `npm run deploy:prod` runs both before deploying.
+- **IRB draft timing:** the live test took about 25 s. The site's `functions_timeout` is unset (the Netlify default). If production cuts it off, move IRB generation to a background function.
+- **Mock review:** it called Gemini from the browser with a key kept in localStorage. It now goes through the proxy.
+- **Accessibility:** axe (WCAG 2 A/AA) reports no violations on 8 screens at 375 px wide. Muted text contrast went from 3.0:1 to about 5.2:1. Clickable cards and scroll areas now work from the keyboard, and NOI form labels are linked to their fields.
+- **Prefill link:** `/?opp=<Grants.gov number>&title=&agency=&close=&src=aggie-gateway` opens the NOI wizard prefilled.
+- **Owner's May work** is now committed. `videos/` (234 MB) was left out of git, so the Learning Center videos won't exist on a GitHub-built deploy until they're hosted somewhere.
