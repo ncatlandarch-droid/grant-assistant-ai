@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Graduate: 3D isometric cube -->
+  <path fill="none" stroke="#5CB8B2" stroke-width="2.5" stroke-linejoin="round" d="M32 8L8 22v20l24 14 24-14V22L32 8z"/>
+  <path fill="none" stroke="#5CB8B2" stroke-width="2.5" d="M8 22l24 14"/>
+  <path fill="none" stroke="#5CB8B2" stroke-width="2.5" d="M56 22L32 36"/>
+  <path fill="none" stroke="#5CB8B2" stroke-width="2.5" d="M32 36v20"/>
+</svg>

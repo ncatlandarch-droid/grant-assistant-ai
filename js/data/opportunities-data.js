@@ -1,3 +1,5 @@
+/* u{00A9} 2026 Think! Design and Planning, LLC. All rights reserved.
+   Granted! AI Grant Assistant u{2014} Proprietary and Confidential */
 /* ============================================
    Calendar of Opportunities — Parsed Data
    Source: NCAT DORED/CAES NOI Submissions

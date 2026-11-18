@@ -1,3 +1,5 @@
+/* u{00A9} 2026 Think! Design and Planning, LLC. All rights reserved.
+   Granted! AI Grant Assistant u{2014} Proprietary and Confidential */
 /* ============================================
    Chat — AI Chat Interface (Column 1)
    ============================================ */
@@ -67,7 +69,6 @@ async function generateAIResponse(userText) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'gemini-2.0-flash',
       payload: {
         systemInstruction: { parts: [{ text: GRANT_SYSTEM_PROMPT + '\n\nCurrent context:\n' + context }] },
         contents: [{ parts: [{ text: userText }] }],
@@ -177,7 +178,6 @@ async function generateProposalResponse(fullPrompt) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'gemini-2.0-flash',
       payload: {
         systemInstruction: { parts: [{ text: GRANT_SYSTEM_PROMPT }] },
         contents: [{ parts: [{ text: fullPrompt }] }],

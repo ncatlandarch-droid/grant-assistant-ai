@@ -1,3 +1,5 @@
+/* u{00A9} 2026 Think! Design and Planning, LLC. All rights reserved.
+   Granted! AI Grant Assistant u{2014} Proprietary and Confidential */
 /* ============================================
    Document Upload — Research-to-Grant Matching
    Drop a PDF or paste text → Gemini reads it →

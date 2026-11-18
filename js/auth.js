@@ -1,3 +1,5 @@
+/* u{00A9} 2026 Think! Design and Planning, LLC. All rights reserved.
+   Granted! AI Grant Assistant u{2014} Proprietary and Confidential */
 /* ============================================
    Auth — Google Sign-In + Admin Detection
    Admin emails are checked against ADMIN_EMAILS.
@@ -60,7 +62,7 @@ _auth.onAuthStateChanged(async user => {
     }
 
     const up = getUserProfile(user);
-    st._greeting = `Welcome back, ${up.displayName}! I'm Granted!, your AI Grant Assistant. What are we working on today?`;
+    st._greeting = `Welcome back, ${up.displayName}! I'm your AI Grant Assistant. What are we working on today?`;
 
     if (justSignedIn) {
       GRANT_TTS.speak(st._greeting);

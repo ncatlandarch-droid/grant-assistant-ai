@@ -1,3 +1,5 @@
+/* u{00A9} 2026 Think! Design and Planning, LLC. All rights reserved.
+   Granted! AI Grant Assistant u{2014} Proprietary and Confidential */
 /* ============================================================
    Institution Configuration — SOP Template
    ─────────────────────────────────────────────────────────────
@@ -10,15 +12,27 @@
    6. Deploy to Netlify / GitHub Pages — done.
    ============================================================ */
 
+const _activeCollege = (typeof getActiveCollege === 'function') ? getActiveCollege() : { name: 'College of Agriculture & Environmental Sciences', abbreviation: 'CAES' };
+
 const INSTITUTION_CONFIG = {
 
   // ── Identity ─────────────────────────────────────────────
   institution: {
     name:         'NC Agricultural & Technical State University',
     shortName:    'NC A&T',
-    college:      'College of Agriculture & Environmental Sciences',
-    abbreviation: 'CAES',
-    website:      'https://www.ncat.edu'
+    college:      _activeCollege.name,
+    abbreviation: _activeCollege.abbreviation,
+    website:      'https://www.ncat.edu',
+    colleges: [
+      { abbrev: 'CAES',  name: 'College of Agriculture & Environmental Sciences' },
+      { abbrev: 'CoE',   name: 'College of Engineering' },
+      { abbrev: 'CoST',  name: 'College of Science & Technology' },
+      { abbrev: 'CAHSS', name: 'College of Arts, Humanities & Social Sciences' },
+      { abbrev: 'CHHS',  name: 'John R. & Kathy R. Hairston College of Health & Human Sciences' },
+      { abbrev: 'CEd',   name: 'College of Education' },
+      { abbrev: 'CoBE',  name: 'Willie A. Deese College of Business & Economics' },
+      { abbrev: 'JSNN',  name: 'Joint School of Nanoscience & Nanoengineering' }
+    ]
   },
 
   // ── Branding ─────────────────────────────────────────────
@@ -37,16 +51,16 @@ const INSTITUTION_CONFIG = {
 
   // ── AI Assistant Persona ──────────────────────────────────
   assistant: {
-    name:    'Granted!',
+    name:    'Grant',
     role:    'AI Grant Assistant',
     image:   'images/grant-avatar.png',
     voice:   'Aoede',
-    greeting: "Hello! I'm Granted!, your AI Grant Assistant for NC A&T CAES. I can help you find funding opportunities, navigate the NOI process, build budgets, and ensure compliance. What would you like to work on today?",
+    greeting: "Hello! I'm your AI Grant Assistant for NC A&T CAES. I can help you find funding opportunities, navigate the NOI process, build budgets, and ensure compliance. What would you like to work on today?",
     modes: [],
     // Pre-recorded coaching keys → matching WAV files in assets/audio/
     // Add en-<key>.wav files to enable instant zero-latency playback
     coachingMessages: {
-      welcome:     "Hello! I'm Granted!, your AI Grant Assistant for NC A&T. How can I help you today?",
+      welcome:     "Hello! I'm your AI Grant Assistant for NC A&T. How can I help you today?",
       keyAdded:    "Gemini API key saved. AI-powered grant coaching is now active.",
       modeCoach:   "Grant Coach mode. I'm here for general guidance and process navigation.",
       modeBudget:  "Budget Advisor mode. Let's work on budgets and IDC calculations.",
@@ -57,12 +71,18 @@ const INSTITUTION_CONFIG = {
 
   // ── Navigation Tabs ───────────────────────────────────────
   navTabs: [
-    { id: 'dashboard',      label: '📊 Dashboard' },
-    { id: 'opportunities',  label: '🔍 Opportunities' },
-    { id: 'research-match', label: '🔬 Research Match' },
-    { id: 'pipeline',       label: '📋 Pipeline' },
-    { id: 'noi-wizard',     label: '📝 NOI Wizard' },
-    { id: 'resources',      label: '📚 Resources' }
+    { id: 'overview',       label: 'Overview' },
+    { id: 'dashboard',      label: 'Dashboard' },
+    { id: 'pipeline',       label: 'Pipeline' },
+    { id: 'noi-wizard',     label: 'NOI Wizard' }
+  ],
+  navMore: [
+    { id: 'opportunities',    label: '🔍 Opportunities' },
+    { id: 'research-match',   label: '🔬 Research Match' },
+    { id: 'proposal-builder', label: '💡 Idea Builder' },
+    { id: 'resources',        label: '📚 Resources' },
+    { id: 'learning-center',  label: '🎓 Learning Center' },
+    { id: 'mock-review',      label: '📝 Mock Review' }
   ],
 
   // ── Grant Office Contact ──────────────────────────────────

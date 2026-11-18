@@ -1,3 +1,5 @@
+/* u{00A9} 2026 Think! Design and Planning, LLC. All rights reserved.
+   Granted! AI Grant Assistant u{2014} Proprietary and Confidential */
 /* ============================================
    Pipeline — Kanban Board Grant Tracker
    ============================================ */
@@ -659,6 +661,13 @@ async function advanceSubmission(id, newStage) {
   try {
     const actor = st.currentUser?.displayName || st.currentUser?.email || 'OSP';
     await updateSubmissionStage(id, newStage, actor);
+
+    // 🎉 Confetti on stage advancement!
+    if (newStage >= 12) {
+      CONFETTI.party(); // Full celebration for completion!
+    } else {
+      CONFETTI.shower(); // Gentle shower for stage advance
+    }
 
     // Email the PI their stage update
     const sub = st.submissions.find(s => s.id === id);

@@ -1,18 +1,53 @@
+/* u{00A9} 2026 Think! Design and Planning, LLC. All rights reserved.
+   Granted! AI Grant Assistant u{2014} Proprietary and Confidential */
 /* ============================================
    Avatar Panel — driven by INSTITUTION_CONFIG
    and USER_PROFILES when a user is signed in.
    ============================================ */
 
-const _A = (window.INSTITUTION_CONFIG?.assistant) || {
-  name: 'Granted!', role: 'AI Grant Assistant',
-  image: 'images/grant-avatar.png',
-  greeting: "Hello! I'm Granted!, your AI Grant Assistant.", modes: []
+// ── Guide Profiles (pre-set voices — no picker needed) ──
+const GUIDE_PROFILES = {
+  grant: {
+    name: 'Grant', role: 'AI Grant Assistant',
+    image: 'images/grant-avatar.png',
+    voice: 'Charon',
+    greeting: "Hello! I'm your AI Grant Assistant for NC A&T. I can help you find funding, navigate the NOI process, build budgets, and ensure compliance. What would you like to work on?",
+  },
+  cathy: {
+    name: 'Cathy', role: 'AI Grant Assistant',
+    image: 'images/cathy-avatar.png',
+    voice: 'Aoede',
+    greeting: "Hello! I'm your AI Grant Assistant for NC A&T. I'm here to help you find funding opportunities, prepare proposals, and guide you through every step. How can I help today?",
+  }
 };
+
+function getActiveGuide() {
+  const id = localStorage.getItem('granted-guide') || 'grant';
+  return { id, ...GUIDE_PROFILES[id] };
+}
+
+function switchGuide(id) {
+  if (!GUIDE_PROFILES[id]) return;
+  localStorage.setItem('granted-guide', id);
+  // Set the pre-assigned voice automatically
+  setActiveVoice(GUIDE_PROFILES[id].voice);
+  render();
+}
+
+const _A = (() => {
+  const g = getActiveGuide();
+  return {
+    name: g.name, role: g.role, image: g.image, voice: g.voice,
+    greeting: g.greeting, modes: window.INSTITUTION_CONFIG?.assistant?.modes || []
+  };
+})();
 
 // Holds a processed image data-URL between file-pick and save
 let _pendingAvatarDataUrl = null;
 
 function renderAvatarPanel() {
+  // Re-read guide dynamically each render
+  const guide = getActiveGuide();
   const panel = document.createElement('aside');
   panel.className = 'col-avatar';
 
@@ -44,24 +79,24 @@ function renderAvatarPanel() {
         ${up.department ? `<div class="avatar-dept">${up.department}</div>` : ''}
         <div class="avatar-assistant-tag">
           <span class="assistant-dot"></span>
-          ${_A.name} · AI Grant Assistant
+          ${guide.name} · AI Grant Assistant
         </div>
-        ${_renderVoicePicker()}
+        ${_renderGuideSelector(guide)}
         ${_renderModeChips()}
       `;
     }
   } else {
     profile.innerHTML = `
       <div class="avatar-img-wrap" id="avatarWrap"
-           onclick="handleAvatarClick(event)" title="Click to hear Granted! speak" style="cursor:pointer">
-        <img src="${_A.image}" alt="${_A.name}" id="avatarImg">
+           onclick="handleAvatarClick(event)" title="Click to hear ${guide.name} speak" style="cursor:pointer">
+        <img src="${guide.image}" alt="${guide.name}" id="avatarImg">
       </div>
       <div class="avatar-name-row">
-        <span class="avatar-name">${_A.name}</span>
+        <span class="avatar-name">${guide.name}</span>
         <button class="voice-badge" onclick="GRANT_TTS.toggleMute()" title="Toggle voice on/off">🔊</button>
       </div>
-      <div class="avatar-role">${_A.role}</div>
-      ${_renderVoicePicker()}
+      <div class="avatar-role">${guide.role}</div>
+      ${_renderGuideSelector(guide)}
       ${_renderModeChips()}
     `;
   }
@@ -74,29 +109,27 @@ function renderAvatarPanel() {
     document.querySelectorAll('.voice-badge').forEach(el => {
       el.textContent = GRANT_TTS.isMuted() ? '🔇' : '🔊';
     });
-    const voiceSelect = document.getElementById('voiceSelect');
-    if (voiceSelect) voiceSelect.value = _activeVoice();
   });
 
   return panel;
 }
 
-function _renderVoicePicker() {
-  const voices = (typeof GEMINI_VOICES !== 'undefined') ? GEMINI_VOICES : [
-    { id: 'Charon', label: 'Charon', desc: 'Deep · Authoritative' },
-    { id: 'Aoede',  label: 'Aoede',  desc: 'Warm · Conversational' },
-    { id: 'Fenrir', label: 'Fenrir', desc: 'Clear · Professional'  },
-    { id: 'Kore',   label: 'Kore',   desc: 'Smooth · Calm'         },
-    { id: 'Puck',   label: 'Puck',   desc: 'Energetic · Friendly'  },
-    { id: 'Zephyr', label: 'Zephyr', desc: 'Neutral · Clean'       }
-  ];
+function _renderGuideSelector(guide) {
   return `
-    <div class="voice-picker-wrap">
-      <label class="voice-picker-label">🎙️ Voice</label>
-      <select id="voiceSelect" class="voice-picker-select"
-              onchange="changeVoice(this.value)">
-        ${voices.map(v => `<option value="${v.id}" title="${v.desc}">${v.label} — ${v.desc}</option>`).join('')}
-      </select>
+    <div class="guide-selector">
+      <span class="guide-selector-label">Your Guide</span>
+      <div class="guide-selector-pills">
+        <button class="guide-pill ${guide.id === 'grant' ? 'active' : ''}"
+                onclick="switchGuide('grant')" title="Grant — Male voice (Charon)">
+          <img src="images/grant-avatar.png" alt="Grant" class="guide-pill-img">
+          <span>Grant</span>
+        </button>
+        <button class="guide-pill ${guide.id === 'cathy' ? 'active' : ''}"
+                onclick="switchGuide('cathy')" title="Cathy — Female voice (Aoede)">
+          <img src="images/cathy-avatar.png" alt="Cathy" class="guide-pill-img">
+          <span>Cathy</span>
+        </button>
+      </div>
     </div>
   `;
 }
@@ -160,6 +193,16 @@ function _renderProfileEditForm(up) {
         <img id="pefPreviewImg" src="${previewSrc}" onerror="this.parentElement.style.display='none'">
       </div>
       <div id="pefStatus" class="pef-status"></div>
+
+      <label class="pef-label" for="pef-interests">Research Interests / Keywords</label>
+      <textarea id="pef-interests" class="pef-input" rows="3"
+                placeholder="e.g. precision agriculture, environmental justice, AI/ML, food safety, water quality">${safeVal(up.researchInterests)}</textarea>
+      <div class="pef-hint" style="font-size:0.7rem;color:var(--text-muted);margin-top:-6px;margin-bottom:10px">Comma-separated keywords — used to recommend Grants.gov opportunities</div>
+
+      <label class="pef-label" for="pef-agencies">Target Agencies</label>
+      <input id="pef-agencies" class="pef-input" value="${safeVal(up.targetAgencies)}"
+             placeholder="e.g. NSF, USDA, NIH, DOD">
+      <div class="pef-hint" style="font-size:0.7rem;color:var(--text-muted);margin-top:-6px;margin-bottom:10px">Agencies you typically submit to — used for opportunity matching</div>
 
       <label class="pef-label" for="pef-voice">Preferred Voice</label>
       <select id="pef-voice" class="pef-input pef-select">
@@ -284,11 +327,13 @@ function _setAvatarStatus(previewId, msg, type) {
 // ── Save functions ─────────────────────────────────────────────────────────
 
 async function saveProfileEdit() {
-  const name   = document.getElementById('pef-name')?.value.trim();
-  const title  = document.getElementById('pef-ftitle')?.value.trim();
-  const dept   = document.getElementById('pef-dept')?.value.trim();
-  const urlVal = document.getElementById('pef-photo')?.value.trim();
-  const voice  = document.getElementById('pef-voice')?.value;
+  const name      = document.getElementById('pef-name')?.value.trim();
+  const title     = document.getElementById('pef-ftitle')?.value.trim();
+  const dept      = document.getElementById('pef-dept')?.value.trim();
+  const urlVal    = document.getElementById('pef-photo')?.value.trim();
+  const voice     = document.getElementById('pef-voice')?.value;
+  const interests = document.getElementById('pef-interests')?.value.trim();
+  const agencies  = document.getElementById('pef-agencies')?.value.trim();
 
   if (!st.currentUser) return;
 
@@ -309,6 +354,8 @@ async function saveProfileEdit() {
   if (title) data.formalTitle    = title;
   if (dept)  data.department     = dept;
   if (voice) data.preferredVoice = voice;
+  data.researchInterests = interests || '';
+  data.targetAgencies    = agencies  || '';
 
   // Uploaded photos → localStorage (avoids Firestore size limits)
   // URL photos → Firestore (small string, syncs across devices)
@@ -339,9 +386,8 @@ async function saveProfileEdit() {
 // ── Other handlers ─────────────────────────────────────────────────────────
 
 function handleAvatarClick() {
-  const greeting = st._greeting
-    || window.INSTITUTION_CONFIG?.assistant?.greeting
-    || "Hello! I'm Granted!, your AI Grant Assistant.";
+  const guide = getActiveGuide();
+  const greeting = st._greeting || guide.greeting;
   GRANT_TTS.speak(greeting);
 }
 

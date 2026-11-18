@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Agriculture: Open leaf/teardrop outline -->
+  <path fill="none" stroke="#95CB89" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M32 8C22 20 16 30 16 40c0 8.8 7.2 16 16 16s16-7.2 16-16C48 30 42 20 32 8z"/>
+  <path fill="none" stroke="#95CB89" stroke-width="2.5" stroke-linecap="round" d="M32 56V28"/>
+</svg>

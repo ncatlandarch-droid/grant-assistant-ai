@@ -1,3 +1,5 @@
+/* u{00A9} 2026 Think! Design and Planning, LLC. All rights reserved.
+   Granted! AI Grant Assistant u{2014} Proprietary and Confidential */
 /* ============================================
    Gemini Neural TTS Engine — Grant Assistant
    Voice: Zephyr (deep male, authoritative)

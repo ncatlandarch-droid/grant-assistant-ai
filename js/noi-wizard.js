@@ -1,3 +1,5 @@
+/* u{00A9} 2026 Think! Design and Planning, LLC. All rights reserved.
+   Granted! AI Grant Assistant u{2014} Proprietary and Confidential */
 /* ============================================
    NOI Wizard — Step-by-step NOI Form
    ============================================ */
@@ -11,12 +13,34 @@ const WIZARD_STEPS = [
   { id: 'review', label: 'Review & Submit' }
 ];
 
+function _esc(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 function renderNOIWizard() {
   const el = document.createElement('div');
   const step = st.wizardStep || 0;
   const data = st.noiData || {};
 
-  el.innerHTML = `
+  // Login reminder for unauthenticated users
+  if (!st.currentUser) {
+    const reminder = document.createElement('div');
+    reminder.className = 'login-reminder-banner';
+    reminder.innerHTML = `
+      <div class="login-reminder-inner">
+        <span class="login-reminder-icon">🔐</span>
+        <div class="login-reminder-text">
+          <strong>Sign in to save your work</strong>
+          <span>Your NOI data won't be saved unless you're logged in. It takes 2 seconds with Google.</span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="signInWithGoogle()">Login Now</button>
+        <button class="login-reminder-dismiss" onclick="this.closest('.login-reminder-banner').remove()" title="Dismiss">✕</button>
+      </div>
+    `;
+    el.appendChild(reminder);
+  }
+
+  el.innerHTML += `
     <div class="section-header">
       <h2>📝 NOI <span>Wizard</span></h2>
     </div>
@@ -24,6 +48,9 @@ function renderNOIWizard() {
       Complete the Notice of Intent form step-by-step. Grant will provide AI guidance at each step.
     </p>
   `;
+  if (st._prefillNote) {
+    el.innerHTML += `<div class="card prefill-note" role="status" style="margin-bottom:16px">${_esc(st._prefillNote)}</div>`;
+  }
 
   // Step indicators
   const steps = document.createElement('div');
@@ -70,11 +97,11 @@ function renderPIStep(d) {
   return `
     <h3 style="color:var(--text-primary); margin-bottom:16px">Principal Investigator Information</h3>
     <div class="form-row">
-      <div class="form-group"><label>PI Name</label><input type="text" id="noi-piName" value="${d.piName || ''}" placeholder="Dr. Jane Smith"></div>
-      <div class="form-group"><label>Email</label><input type="email" id="noi-piEmail" value="${d.piEmail || ''}" placeholder="jsmith@ncat.edu"></div>
+      <div class="form-group"><label for="noi-piName">PI Name</label><input type="text" id="noi-piName" value="${_esc(d.piName || '')}" placeholder="Dr. Jane Smith"></div>
+      <div class="form-group"><label for="noi-piEmail">Email</label><input type="email" id="noi-piEmail" value="${_esc(d.piEmail || '')}" placeholder="jsmith@ncat.edu"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Department</label>
+      <div class="form-group"><label for="noi-piDept">Department</label>
         <select id="noi-piDept">
           <option value="">Select Department</option>
           <option ${d.piDept === 'Animal Sciences' ? 'selected' : ''}>Animal Sciences</option>
@@ -87,14 +114,14 @@ function renderPIStep(d) {
           <option ${d.piDept === 'SFRIC' ? 'selected' : ''}>SFRIC</option>
         </select>
       </div>
-      <div class="form-group"><label>College</label>
+      <div class="form-group"><label for="noi-piCollege">College</label>
         <select id="noi-piCollege">
           <option value="">Select College</option>
           ${Object.entries(COLLEGES).map(([k, v]) => `<option value="${k}" ${d.piCollege === k ? 'selected' : ''}>${v}</option>`).join('')}
         </select>
       </div>
     </div>
-    <div class="form-group"><label>Co-PIs (if any)</label><textarea id="noi-coPIs" placeholder="Name, Department, Institution (one per line)">${d.coPIs || ''}</textarea></div>
+    <div class="form-group"><label for="noi-coPIs">Co-PIs (if any)</label><textarea id="noi-coPIs" placeholder="Name, Department, Institution (one per line)">${_esc(d.coPIs || '')}</textarea></div>
   `;
 }
 
@@ -102,17 +129,17 @@ function renderSponsorStep(d) {
   return `
     <h3 style="color:var(--text-primary); margin-bottom:16px">Sponsor & Solicitation</h3>
     <div class="form-row">
-      <div class="form-group"><label>Funding Agency / Sponsor</label>
+      <div class="form-group"><label for="noi-sponsor">Funding Agency / Sponsor</label>
         <select id="noi-sponsor">
           <option value="">Select Sponsor</option>
           ${Object.entries(SPONSORS).map(([k, v]) => `<option value="${v}" ${d.sponsor === v ? 'selected' : ''}>${v}</option>`).join('')}
         </select>
       </div>
-      <div class="form-group"><label>Program</label><input type="text" id="noi-program" value="${d.program || ''}" placeholder="e.g., AFRI Foundational"></div>
+      <div class="form-group"><label for="noi-program">Program</label><input type="text" id="noi-program" value="${_esc(d.program || '')}" placeholder="e.g., AFRI Foundational"></div>
     </div>
-    <div class="form-group"><label>Solicitation Number / Link</label><input type="text" id="noi-solicitation" value="${d.solicitation || ''}" placeholder="e.g., USDA-NIFA-AFRI-2025-001"></div>
-    <div class="form-group"><label>Submission Deadline</label><input type="date" id="noi-deadline" value="${d.deadline || ''}"></div>
-    <div class="form-group"><label>Grant Type</label>
+    <div class="form-group"><label for="noi-solicitation">Solicitation Number / Link</label><input type="text" id="noi-solicitation" value="${_esc(d.solicitation || '')}" placeholder="e.g., USDA-NIFA-AFRI-2025-001"></div>
+    <div class="form-group"><label for="noi-deadline">Submission Deadline</label><input type="date" id="noi-deadline" value="${_esc(d.deadline || '')}"></div>
+    <div class="form-group"><label for="noi-type">Grant Type</label>
       <select id="noi-type">
         <option value="">Select Type</option>
         ${Object.entries(OPP_TYPES).map(([k, v]) => `<option value="${v}" ${d.type === v ? 'selected' : ''}>${v}</option>`).join('')}
@@ -124,16 +151,16 @@ function renderSponsorStep(d) {
 function renderProposalStep(d) {
   return `
     <h3 style="color:var(--text-primary); margin-bottom:16px">Proposal Details</h3>
-    <div class="form-group"><label>Proposal Title</label><input type="text" id="noi-title" value="${d.title || ''}" placeholder="Full proposal title"></div>
-    <div class="form-group"><label>Project Summary (2-3 sentences)</label><textarea id="noi-summary" placeholder="Brief description of the proposed research...">${d.summary || ''}</textarea></div>
+    <div class="form-group"><label for="noi-title">Proposal Title</label><input type="text" id="noi-title" value="${_esc(d.title || '')}" placeholder="Full proposal title"></div>
+    <div class="form-group"><label for="noi-summary">Project Summary (2-3 sentences)</label><textarea id="noi-summary" placeholder="Brief description of the proposed research...">${_esc(d.summary || '')}</textarea></div>
     <div class="form-row">
-      <div class="form-group"><label>Estimated Total Funding</label><input type="number" id="noi-funding" value="${d.funding || ''}" placeholder="500000"></div>
-      <div class="form-group"><label>Duration</label><input type="text" id="noi-duration" value="${d.duration || ''}" placeholder="e.g., 36 months"></div>
+      <div class="form-group"><label for="noi-funding">Estimated Total Funding</label><input type="number" id="noi-funding" value="${_esc(d.funding || '')}" placeholder="500000"></div>
+      <div class="form-group"><label for="noi-duration">Duration</label><input type="text" id="noi-duration" value="${_esc(d.duration || '')}" placeholder="e.g., 36 months"></div>
     </div>
-    <div class="form-group"><label>Subrecipients?</label>
+    <div class="form-group"><label for="noi-subrec">Subrecipients?</label>
       <select id="noi-subrec"><option value="no" ${d.subrec !== 'yes' ? 'selected' : ''}>No</option><option value="yes" ${d.subrec === 'yes' ? 'selected' : ''}>Yes</option></select>
     </div>
-    <div class="form-group"><label>Subrecipient Institutions (if applicable)</label><input type="text" id="noi-subInst" value="${d.subInst || ''}" placeholder="e.g., NC State, Virginia State"></div>
+    <div class="form-group"><label for="noi-subInst">Subrecipient Institutions (if applicable)</label><input type="text" id="noi-subInst" value="${_esc(d.subInst || '')}" placeholder="e.g., NC State, Virginia State"></div>
   `;
 }
 
@@ -167,14 +194,14 @@ function renderBudgetStep(d) {
   return `
     <h3 style="color:var(--text-primary); margin-bottom:16px">Budget & IDC</h3>
     <div class="form-row">
-      <div class="form-group"><label>IDC Rate</label><input type="text" id="noi-idc" value="${idcRate}%" readonly style="opacity:0.7"></div>
-      <div class="form-group"><label>Cost Share Required?</label>
+      <div class="form-group"><label for="noi-idc">IDC Rate</label><input type="text" id="noi-idc" value="${idcRate}%" readonly style="opacity:0.7"></div>
+      <div class="form-group"><label for="noi-costShare">Cost Share Required?</label>
         <select id="noi-costShare"><option value="no" ${d.costShare !== 'yes' ? 'selected' : ''}>No</option><option value="yes" ${d.costShare === 'yes' ? 'selected' : ''}>Yes</option></select>
       </div>
     </div>
-    <div class="form-group"><label>Cost Share Amount (if applicable)</label><input type="number" id="noi-costShareAmt" value="${d.costShareAmt || ''}" placeholder="0"></div>
-    <div class="form-group"><label>PI Effort (%)</label><input type="number" id="noi-effort" value="${d.effort || ''}" placeholder="e.g., 20" min="0" max="100"></div>
-    <div class="form-group"><label>Budget Notes</label><textarea id="noi-budgetNotes" placeholder="Any special budget considerations...">${d.budgetNotes || ''}</textarea></div>
+    <div class="form-group"><label for="noi-costShareAmt">Cost Share Amount (if applicable)</label><input type="number" id="noi-costShareAmt" value="${_esc(d.costShareAmt || '')}" placeholder="0"></div>
+    <div class="form-group"><label for="noi-effort">PI Effort (%)</label><input type="number" id="noi-effort" value="${_esc(d.effort || '')}" placeholder="e.g., 20" min="0" max="100"></div>
+    <div class="form-group"><label for="noi-budgetNotes">Budget Notes</label><textarea id="noi-budgetNotes" placeholder="Any special budget considerations...">${_esc(d.budgetNotes || '')}</textarea></div>
     <div class="card" style="margin-top:12px; background:rgba(253,185,39,0.05); border-color:rgba(253,185,39,0.2)">
       <div style="font-size:0.82rem; color:var(--aggie-gold)">💡 <strong>Grant says:</strong> ${idcRate === 0 ? 'Capacity programs carry 0% IDC. Budget the full award for direct costs.' : 'Competitive grants at NC A&T use a 48% IDC rate on modified total direct costs (MTDC). Equipment >$5K and participant support are excluded from the IDC base.'}</div>
     </div>
@@ -186,14 +213,14 @@ function renderReviewStep(d) {
     <h3 style="color:var(--text-primary); margin-bottom:16px">Review & Submit</h3>
     <div class="card" style="margin-bottom:12px">
       <div class="card-subtitle">PI</div>
-      <div class="card-title">${d.piName || 'Not provided'}</div>
-      <div style="font-size:0.8rem; color:var(--text-secondary)">${d.piDept || ''} · ${d.piEmail || ''}</div>
+      <div class="card-title">${_esc(d.piName || 'Not provided')}</div>
+      <div style="font-size:0.8rem; color:var(--text-secondary)">${_esc(d.piDept || '')} · ${_esc(d.piEmail || '')}</div>
     </div>
     <div class="card" style="margin-bottom:12px">
       <div class="card-subtitle">Proposal</div>
-      <div class="card-title">${d.title || 'Not provided'}</div>
-      <div style="font-size:0.8rem; color:var(--text-secondary)">${d.sponsor || ''} · ${d.program || ''} · ${d.type || ''}</div>
-      <div style="font-size:0.8rem; color:var(--aggie-gold); margin-top:4px">$${Number(d.funding || 0).toLocaleString()} · ${d.duration || ''}</div>
+      <div class="card-title">${_esc(d.title || 'Not provided')}</div>
+      <div style="font-size:0.8rem; color:var(--text-secondary)">${_esc(d.sponsor || '')} · ${_esc(d.program || '')} · ${_esc(d.type || '')}</div>
+      <div style="font-size:0.8rem; color:var(--aggie-gold); margin-top:4px">$${Number(d.funding || 0).toLocaleString()} · ${_esc(d.duration || '')}</div>
     </div>
     <div class="card" style="margin-bottom:12px">
       <div class="card-subtitle">Compliance Flags</div>
@@ -227,7 +254,17 @@ function saveWizardData() {
   st.noiData = d;
 }
 
-function nextWizardStep() { saveWizardData(); st.wizardStep = (st.wizardStep || 0) + 1; render(); }
+function nextWizardStep() {
+  saveWizardData();
+  st.wizardStep = (st.wizardStep || 0) + 1;
+  // Confetti burst on step completion
+  const btn = document.querySelector('.btn-primary[onclick="nextWizardStep()"]');
+  if (btn) {
+    const rect = btn.getBoundingClientRect();
+    CONFETTI.burst(rect.left + rect.width / 2, rect.top);
+  }
+  render();
+}
 function prevWizardStep() { saveWizardData(); st.wizardStep = Math.max(0, (st.wizardStep || 0) - 1); render(); }
 function goToWizardStep(i) { saveWizardData(); st.wizardStep = i; render(); }
 async function submitNOI() {
@@ -239,6 +276,8 @@ async function submitNOI() {
     await saveSubmission(st.noiData);
     st.wizardStep = 0;
     st.noiData = {};
+    // 🎉 Full confetti party on NOI submission!
+    CONFETTI.party();
     addMessage('ai', `✅ NOI submitted and saved! Your proposal is now in the pipeline at Stage 1. A Grant Manager will be assigned after your Associate Dean approves. Track progress in the Pipeline tab.`);
     GRANT_TTS.speak('Your NOI has been submitted and saved to the system. You can track its progress in the Pipeline tab.');
     setView('pipeline');

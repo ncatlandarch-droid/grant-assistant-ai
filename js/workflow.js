@@ -1,3 +1,5 @@
+/* u{00A9} 2026 Think! Design and Planning, LLC. All rights reserved.
+   Granted! AI Grant Assistant u{2014} Proprietary and Confidential */
 /* ============================================
    Workflow — Research Idea → Full Results View
    Triggered by the proposal builder input.
@@ -67,7 +69,6 @@ Rules:
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'gemini-2.0-flash',
         payload: {
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { maxOutputTokens: 1500, temperature: 0.4 }

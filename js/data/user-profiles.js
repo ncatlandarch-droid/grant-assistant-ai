@@ -1,3 +1,5 @@
+/* u{00A9} 2026 Think! Design and Planning, LLC. All rights reserved.
+   Granted! AI Grant Assistant u{2014} Proprietary and Confidential */
 /* ============================================
    User Profiles — Per-user avatar, name, role,
    and preferred voice. Add any known user here.
@@ -71,7 +73,9 @@ function getUserProfile(user) {
     formalTitle,
     department,
     role,
-    preferredVoice: fs.preferredVoice || known.preferredVoice || null
+    preferredVoice:    fs.preferredVoice    || known.preferredVoice    || null,
+    researchInterests: fs.researchInterests || known.researchInterests || '',
+    targetAgencies:    fs.targetAgencies    || known.targetAgencies    || ''
   };
 }
 

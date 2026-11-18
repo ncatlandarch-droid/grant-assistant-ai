@@ -1,10 +1,12 @@
+/* u{00A9} 2026 Think! Design and Planning, LLC. All rights reserved.
+   Granted! AI Grant Assistant u{2014} Proprietary and Confidential */
 /* ============================================
    App — Core State & Render Dispatcher
    ============================================ */
 
 // Global state
 const st = {
-  view: 'dashboard',
+  view: 'overview',
   avatarMode: 'coach',
   messages: [],
   activeOpportunity: null,
@@ -49,6 +51,7 @@ function h(tag, attrs, ...children) {
 function setView(view) {
   st.view = view;
   if (view !== 'pipeline') st.activeOpportunity = null;
+  if (view !== 'noi-wizard') st._prefillNote = null;
   render();
 }
 
@@ -223,15 +226,13 @@ function renderDashboard() {
     </div>
 
     <!-- ── PROPOSAL BUILDER ── -->
-    <div class="proposal-builder">
+    <div class="proposal-builder" onclick="setView('proposal-builder')" style="cursor:pointer">
       <div class="pb-icon">💡</div>
       <div class="pb-content">
-        <div class="pb-title">Describe your research idea</div>
-        <div class="pb-sub">Granted! will match funding opportunities, draft your NOI abstract, flag compliance needs, and build your submission timeline — instantly.</div>
-        <div class="pb-input-wrap">
-          <textarea id="ideaInput" class="pb-input" rows="2"
-            placeholder="e.g. I want to study the impact of cover crops on soil carbon sequestration in small farms across the Southeast..."></textarea>
-          <button class="pb-btn" onclick="launchProposalBuilder()">Get Matched →</button>
+        <div class="pb-title">Have a Research Idea? Let GRANT Analyze It</div>
+        <div class="pb-sub">Drop your research concept and get AI-matched funding, a draft abstract, timeline, budget estimate, compliance flags, and collaboration suggestions — all in seconds.</div>
+        <div style="margin-top:12px">
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); setView('proposal-builder')">💡 Launch Idea Analyzer →</button>
         </div>
       </div>
     </div>
@@ -439,15 +440,19 @@ function render() {
   const workspace = document.createElement('main');
   workspace.className = 'col-workspace';
   switch (st.view) {
-    case 'dashboard':      workspace.appendChild(renderDashboard()); break;
-    case 'workflow':       workspace.appendChild(renderWorkflow()); break;
-    case 'opportunities':  workspace.appendChild(renderOpportunities()); break;
-    case 'research-match': workspace.appendChild(renderDocumentAnalysis()); break;
-    case 'pipeline':       workspace.appendChild(renderPipeline()); break;
-    case 'noi-wizard':     workspace.appendChild(renderNOIWizard()); break;
-    case 'resources':      workspace.appendChild(renderResources()); break;
-    case 'team-members':   workspace.appendChild(renderAdminUsers()); break;
-    default:               workspace.appendChild(renderDashboard());
+    case 'overview':           workspace.appendChild(renderOverview()); break;
+    case 'dashboard':          workspace.appendChild(renderDashboard()); break;
+    case 'proposal-builder':   workspace.appendChild(renderProposalBuilder()); break;
+    case 'workflow':           workspace.appendChild(renderWorkflow()); break;
+    case 'opportunities':      workspace.appendChild(renderOpportunities()); break;
+    case 'research-match':     workspace.appendChild(renderDocumentAnalysis()); break;
+    case 'pipeline':           workspace.appendChild(renderPipeline()); break;
+    case 'noi-wizard':         workspace.appendChild(renderNOIWizard()); break;
+    case 'resources':          workspace.appendChild(renderResources()); break;
+    case 'learning-center':    workspace.appendChild(st._learningModule != null ? renderModuleDetail() : renderLearningCenter()); break;
+    case 'mock-review':        workspace.appendChild(renderMockReview()); break;
+    case 'team-members':       workspace.appendChild(renderAdminUsers()); break;
+    default:                   workspace.appendChild(renderOverview());
   }
   body.appendChild(workspace);
 
@@ -468,6 +473,9 @@ function initApp() {
     || "Welcome! I'm Grant, your AI Grant Assistant.";
   addMessage('ai', greeting);
   st._greeting = greeting;
+
+  // Opportunity handed over by link (e.g. from Aggie Gateway) — opens the NOI wizard prefilled.
+  if (typeof applyOppPrefill === 'function' && applyOppPrefill()) addMessage('ai', st._prefillNote);
 
   // Start real-time Firestore listener — pipeline auto-updates on any change
   listenToSubmissions(submissions => {

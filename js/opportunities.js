@@ -1,3 +1,5 @@
+/* u{00A9} 2026 Think! Design and Planning, LLC. All rights reserved.
+   Granted! AI Grant Assistant u{2014} Proprietary and Confidential */
 /* ============================================
    Opportunities — Searchable NOI Database
    ============================================ */
@@ -79,6 +81,41 @@ function renderOpportunities() {
       </table>
     </div>
   `;
+
+  // ── Grants.gov Live Search Results (when user searches) ──
+  const govSearch = document.createElement('div');
+  govSearch.className = 'grants-search-results';
+  govSearch.id = 'grants-search-results';
+  if (hasSearch && st.oppSearch?.length >= 3) {
+    govSearch.innerHTML = `
+      <div class="rec-opps-section">
+        <div class="section-header" style="margin-bottom:12px">
+          <h3>📡 Federal Opportunities <span>from Grants.gov</span></h3>
+          <span class="badge badge-success" style="font-size:0.7rem">Live Search</span>
+        </div>
+        <div id="gov-search-list" class="rec-opps-list">
+          <div class="mr-grants-loading">🔄 Searching Grants.gov for "${st.oppSearch}"...</div>
+        </div>
+      </div>
+    `;
+  }
+  el.appendChild(govSearch);
+
+  // ── Grants.gov Recommended Opportunities (based on profile) ──
+  if (!hasSearch) {
+    const recWrap = document.createElement('div');
+    recWrap.className = 'grants-recommended';
+    recWrap.id = 'grants-recommended';
+    recWrap.innerHTML = renderRecommendedOpps();
+    el.appendChild(recWrap);
+  }
+
+  // Kick off fetches after DOM attach
+  setTimeout(() => {
+    if (hasSearch && st.oppSearch?.length >= 3) _searchGrantsGov(st.oppSearch);
+    else _loadRecommendedOpps();
+  }, 150);
+
   return el;
 }
 
@@ -104,6 +141,7 @@ function filterOpportunities() {
   return data;
 }
 
+let _govSearchTimer = null;
 function updateOppSearch(val) {
   st.oppSearch = val;
   // Restore focus + cursor after render so the full DOM rebuild doesn't break typing
@@ -111,6 +149,12 @@ function updateOppSearch(val) {
   render();
   const input = document.getElementById('oppSearch');
   if (input) { input.focus(); if (pos != null) input.setSelectionRange(pos, pos); }
+
+  // Debounced Grants.gov search (500ms after user stops typing)
+  clearTimeout(_govSearchTimer);
+  if (val.trim().length >= 3) {
+    _govSearchTimer = setTimeout(() => _searchGrantsGov(val.trim()), 500);
+  }
 }
 
 function clearOppSearch() {
@@ -135,4 +179,217 @@ function getStageBadge(stage) {
   if (stage >= 8) return 'badge-warning';
   if (stage >= 4) return 'badge-info';
   return 'badge-muted';
+}
+
+// ===================================================
+//  Grants.gov Recommended Opportunities
+// ===================================================
+
+/** Cache for recommended opps (5 min TTL) */
+let _recOppsCache = null;
+let _recOppsCacheTs = 0;
+
+function renderRecommendedOpps() {
+  const up = (typeof getUserProfile === 'function' && st.currentUser)
+    ? getUserProfile(st.currentUser) : null;
+  const hasProfile = !!(up?.researchInterests || up?.targetAgencies);
+
+  return `
+    <div class="rec-opps-section">
+      <div class="section-header" style="margin-bottom:12px">
+        <h3>📡 Recommended <span>Opportunities</span></h3>
+        <span class="badge badge-success" style="font-size:0.7rem">Live from Grants.gov</span>
+      </div>
+      ${!hasProfile ? `
+        <div class="rec-opps-setup">
+          <div class="rec-opps-setup-icon">🎯</div>
+          <div class="rec-opps-setup-text">
+            <strong>Set up your research profile</strong> to get personalized opportunity recommendations.
+            Add your research keywords and target agencies in your <a href="#" onclick="st.editingProfile=true; render(); return false">profile settings</a>.
+          </div>
+        </div>
+      ` : `
+        <div class="rec-opps-profile-tags">
+          <span class="rec-tag-label">Matching:</span>
+          ${(up.researchInterests || '').split(',').filter(k => k.trim()).map(k =>
+            `<span class="rec-tag">${k.trim()}</span>`
+          ).join('')}
+          ${(up.targetAgencies || '').split(',').filter(k => k.trim()).map(k =>
+            `<span class="rec-tag agency">${k.trim()}</span>`
+          ).join('')}
+        </div>
+        <div id="rec-opps-list" class="rec-opps-list">
+          <div class="mr-grants-loading">🔄 Searching Grants.gov for matching opportunities...</div>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+async function _loadRecommendedOpps() {
+  const container = document.getElementById('rec-opps-list');
+  if (!container) return;
+
+  const up = (typeof getUserProfile === 'function' && st.currentUser)
+    ? getUserProfile(st.currentUser) : null;
+  if (!up?.researchInterests && !up?.targetAgencies) return;
+
+  // Check cache
+  if (_recOppsCache && Date.now() - _recOppsCacheTs < 300000) {
+    _renderRecOppsList(container, _recOppsCache);
+    return;
+  }
+
+  // Build search queries from profile
+  const keywords = (up.researchInterests || '').split(',').map(k => k.trim()).filter(Boolean);
+  const agencies = (up.targetAgencies || '').split(',').map(k => k.trim().toUpperCase()).filter(Boolean);
+
+  // Map agency abbreviations to Grants.gov codes
+  const agencyMap = typeof GRANTS_GOV_AGENCY_MAP !== 'undefined' ? GRANTS_GOV_AGENCY_MAP : {};
+
+  try {
+    // Parallel searches: one per agency (or keyword-only if no agencies)
+    const searches = [];
+    if (agencies.length > 0) {
+      for (const ag of agencies.slice(0, 4)) { // Max 4 agencies to be polite
+        const govCode = agencyMap[ag] || ag;
+        searches.push(
+          fetch('/api/grants-gov', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'search',
+              params: {
+                keyword: keywords.slice(0, 3).join(' '), // Top 3 keywords
+                agency: govCode,
+                statuses: 'posted|forecasted',
+                rows: 10,
+                offset: 0,
+                sortBy: 'openDate|desc'
+              }
+            })
+          }).then(r => r.json()).catch(() => ({ data: { oppHits: [] } }))
+        );
+      }
+    } else if (keywords.length > 0) {
+      searches.push(
+        fetch('/api/grants-gov', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'search',
+            params: {
+              keyword: keywords.slice(0, 5).join(' '),
+              statuses: 'posted|forecasted',
+              rows: 20,
+              offset: 0,
+              sortBy: 'openDate|desc'
+            }
+          })
+        }).then(r => r.json()).catch(() => ({ data: { oppHits: [] } }))
+      );
+    }
+
+    const results = await Promise.all(searches);
+
+    // Merge and deduplicate
+    const seen = new Set();
+    const allOpps = [];
+    results.forEach(r => {
+      (r?.data?.oppHits || []).forEach(opp => {
+        if (!seen.has(opp.id)) {
+          seen.add(opp.id);
+          allOpps.push(opp);
+        }
+      });
+    });
+
+    _recOppsCache = allOpps;
+    _recOppsCacheTs = Date.now();
+    _renderRecOppsList(container, allOpps);
+  } catch (err) {
+    console.error('Recommended opps fetch error:', err);
+    container.innerHTML = '<div class="mr-grants-error">⚠️ Could not reach Grants.gov right now.</div>';
+  }
+}
+
+function _renderRecOppsList(container, opps) {
+  if (!opps.length) {
+    container.innerHTML = '<div class="mr-grants-empty">No matching opportunities found. Try broadening your research keywords.</div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="mr-grants-count">${opps.length} matching opportunit${opps.length === 1 ? 'y' : 'ies'}</div>
+    ${opps.slice(0, 20).map(opp => `
+      <div class="mr-grant-card">
+        <div class="mr-grant-title">
+          <a href="https://www.grants.gov/search-results-detail/${opp.id}" target="_blank" rel="noopener">${opp.title || 'Untitled'}</a>
+        </div>
+        <div class="mr-grant-meta">
+          <span class="mr-grant-number">${opp.number || ''}</span>
+          <span class="mr-grant-status ${opp.oppStatus === 'posted' ? 'posted' : 'forecasted'}">${opp.oppStatus || '?'}</span>
+          ${opp.openDate ? `<span class="mr-grant-date">📅 ${opp.openDate}</span>` : ''}
+          ${opp.closeDate ? `<span class="mr-grant-date">⏰ ${opp.closeDate}</span>` : ''}
+        </div>
+        ${opp.agencyName ? `<div class="mr-grant-agency">${opp.agencyName}</div>` : ''}
+      </div>
+    `).join('')}
+    <div class="mr-grants-footer">
+      <a href="https://www.grants.gov/search-grants" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
+        Explore All on Grants.gov →
+      </a>
+    </div>
+  `;
+}
+
+// ===================================================
+//  Grants.gov Live Search (from search bar)
+// ===================================================
+let _govSearchCache = {};
+
+async function _searchGrantsGov(query) {
+  const container = document.getElementById('gov-search-list');
+  if (!container) return;
+
+  // Cache check (5 min)
+  if (_govSearchCache[query] && Date.now() - _govSearchCache[query].ts < 300000) {
+    _renderRecOppsList(container, _govSearchCache[query].data);
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/grants-gov', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'search',
+        params: {
+          keyword: query,
+          statuses: 'posted|forecasted',
+          rows: 25,
+          offset: 0,
+          sortBy: 'openDate|desc'
+        }
+      })
+    });
+    const json = await res.json();
+    const opps = json?.data?.oppHits || [];
+
+    _govSearchCache[query] = { data: opps, ts: Date.now() };
+
+    // Only update if user hasn't changed their search since we started
+    const currentContainer = document.getElementById('gov-search-list');
+    if (currentContainer) {
+      _renderRecOppsList(currentContainer, opps);
+
+      // Update the badge
+      const section = currentContainer.closest('.rec-opps-section');
+      const badge = section?.querySelector('.badge-success');
+      if (badge) badge.textContent = `${opps.length} results`;
+    }
+  } catch (err) {
+    console.error('Grants.gov search error:', err);
+    if (container) container.innerHTML = '<div class="mr-grants-error">⚠️ Could not reach Grants.gov right now.</div>';
+  }
 }
