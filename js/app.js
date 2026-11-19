@@ -477,12 +477,6 @@ function initApp() {
   // Opportunity handed over by link (e.g. from Aggie Gateway) — opens the NOI wizard prefilled.
   if (typeof applyOppPrefill === 'function' && applyOppPrefill()) addMessage('ai', st._prefillNote);
 
-  // Start real-time Firestore listener — pipeline auto-updates on any change
-  listenToSubmissions(submissions => {
-    st.submissions = submissions;
-    render();
-  });
-
   render();
 }
 

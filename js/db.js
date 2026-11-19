@@ -56,10 +56,21 @@ async function saveSubmission(data) {
   return ref.id;
 }
 
-function listenToSubmissions(callback) {
-  return db.collection(SUBMISSIONS_COL)
-    .orderBy('submittedAt', 'desc')
-    .onSnapshot(snap => {
+function listenToSubmissions(callback, opts = {}) {
+  const isAdmin   = !!opts.isAdmin;
+  const userEmail = (opts.userEmail || '').trim();
+
+  let query;
+  if (isAdmin) {
+    query = db.collection(SUBMISSIONS_COL).orderBy('submittedAt', 'desc');
+  } else if (userEmail) {
+    query = db.collection(SUBMISSIONS_COL).where('piEmail', '==', userEmail);
+  } else {
+    callback([]);
+    return () => {};
+  }
+
+  return query.onSnapshot(snap => {
       const submissions = snap.docs.map(d => {
         const raw = d.data();
         return {
@@ -94,7 +105,12 @@ function listenToSubmissions(callback) {
           isLive:           true
         };
       });
+      if (!isAdmin) {
+        submissions.sort((a, b) => (b.submittedAt?.seconds || 0) - (a.submittedAt?.seconds || 0));
+      }
       callback(submissions);
+    }, err => {
+      console.warn('Firestore submissions listener error:', err?.message || err);
     });
 }
 

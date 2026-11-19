@@ -6,10 +6,13 @@
    ============================================ */
 
 const ADMIN_EMAILS = [
-  'ncatlandarch@gmail.com'
+  'ncatlandarch@gmail.com',
+  'wcharrison@ncat.edu',
+  'chris@thinkdesignplanning.com'
 ];
 
 const _auth = firebase.auth();
+let _unsubSubmissions = null;
 
 function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
@@ -36,7 +39,20 @@ _auth.onAuthStateChanged(async user => {
   // shows right away instead of the default Granted! avatar
   render();
 
+  if (_unsubSubmissions) {
+    _unsubSubmissions();
+    _unsubSubmissions = null;
+  }
+
   if (user) {
+    // Start auth-scoped Firestore submissions listener
+    if (typeof listenToSubmissions === 'function') {
+      _unsubSubmissions = listenToSubmissions(submissions => {
+        st.submissions = submissions;
+        render();
+      }, { isAdmin: st.isAdmin, userEmail: user.email || '' });
+    }
+
     // Auto-register and load Firestore profile in background
     await saveUserProfile(user.uid, {
       uid:               user.uid,
@@ -71,7 +87,9 @@ _auth.onAuthStateChanged(async user => {
     // Second render once Firestore profile (custom photo, title, etc.) is loaded
     render();
   } else {
+    st.submissions = [];
     st.firestoreProfile = null;
     st._greeting = null;
+    render();
   }
 });

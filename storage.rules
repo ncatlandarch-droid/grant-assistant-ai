@@ -1,0 +1,15 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Public read-only access for Granted Learning Center training videos & captions
+    match /learning-videos/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Fail-closed default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
