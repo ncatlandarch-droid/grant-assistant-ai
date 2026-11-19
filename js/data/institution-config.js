@@ -85,7 +85,8 @@ const INSTITUTION_CONFIG = {
     { id: 'mock-review',      label: '📝 Mock Review' },
     { id: 'readiness-studio', label: 'Readiness Studio' },
     { id: 'budget-builder',   label: 'Budget & IDC' },
-    { id: 'team-bios',        label: 'Team & ORCID Bios' }
+    { id: 'team-bios',        label: 'Team & ORCID Bios' },
+    { id: 'erp-bridge',       label: 'ERP Bridge (Banner / InfoEd)' }
   ],
 
   // ── Grant Office Contact ──────────────────────────────────

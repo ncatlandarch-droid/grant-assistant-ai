@@ -101,6 +101,9 @@ function listenToSubmissions(callback, opts = {}) {
           remindersSent:    raw.remindersSent    || [],
           stageHistory:     raw.stageHistory     || [],
           irbDraft:         raw.irbDraft         || null,
+          infoEdId:         raw.infoEdId         || '',
+          bannerFund:       raw.bannerFund       || '',
+          bannerOrg:        raw.bannerOrg        || '',
           submittedAt:      raw.submittedAt,
           isLive:           true
         };
@@ -131,6 +134,28 @@ async function updateSubmissionStage(id, stage, actor) {
 
 async function deleteSubmission(id) {
   await db.collection(SUBMISSIONS_COL).doc(id).delete();
+}
+
+async function applyERPSyncUpdate(id, patch = {}, actor = 'OSP ERP Sync') {
+  const update = {};
+  if (patch.infoEdId) update.infoEdId = patch.infoEdId;
+  if (patch.bannerFund) update.bannerFund = patch.bannerFund;
+  if (patch.bannerOrg) update.bannerOrg = patch.bannerOrg;
+  if (patch.stage) {
+    const clamped = Math.min(Math.max(Number(patch.stage), 1), 12);
+    const label = STAGE_NAMES[clamped] || `Stage ${clamped}`;
+    update.stage = clamped;
+    update.status = label;
+    update.stageHistory = firebase.firestore.FieldValue.arrayUnion({
+      stage: clamped,
+      status: label,
+      by: `${actor} (ERP Sync)`,
+      ts: new Date().toISOString()
+    });
+  }
+  if (Object.keys(update).length) {
+    await db.collection(SUBMISSIONS_COL).doc(id).update(update);
+  }
 }
 
 async function saveIRBDraft(id, draft) {

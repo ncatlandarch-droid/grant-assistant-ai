@@ -18,6 +18,8 @@
   - `netlify/lib/auth.js` + `js/modules/api-client.js` — cryptographic Firebase ID token verification (Google x509 certs + Node crypto) locking down `send-email` (PI/admin only) and `process-avatar` (signed-in only), plus origin + per-IP rate limiting on `gemini`.
   - `netlify/functions/orcid-proxy.js` + `js/modules/team-bios.js` — public ORCID v3.0 profile/publication importer + Team Roster & AI Biosketch Studio (with `[VERIFY]` tags + Word export).
   - `js/modules/budget-engine.js` + `js/modules/budget-view.js` + `js/modules/docx-export.js` — zero-negative 2 CFR 200 MTDC & USDA NIFA 30% TFFA Budget Calculator + AI Budget Justification + WCAG-structured Word (`.doc`) exporter.
+- **Tier 1 ERP Bridge (2026-11-19):**
+  - `js/modules/erp-schema.js` + `js/modules/erp-bridge-view.js` — NC A&T Fringe Rate estimator, Banner FOAPAL / InfoEd CSV & JSON export (with CSV formula-injection neutralization), weekly InfoEd/Banner status CSV diff importer (`applyERPSyncUpdate` in `js/db.js`), and 12-stage institutional role-based routing matrix.
 - **Commercial Branding:** `pricing.html` updated from `SFRIC ERD Studio` to `Think! Design and Planning, LLC`.
 
 ## Open Owner / Next-Session Actions

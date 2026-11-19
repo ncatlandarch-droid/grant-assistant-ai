@@ -76,6 +76,15 @@ function renderBudgetBuilder() {
         <input id="bvCap" type="number" min="0" step="1000" class="gs-textarea" style="min-height:auto;padding:9px 12px"
                value="${b.awardCap}" onchange="bvSet('awardCap', this.value)">
       </div>
+      <div class="gs-field">
+        <label for="bvFringePreset">NC A&amp;T Fringe Rate Helper</label>
+        <select id="bvFringePreset" onchange="bvApplyFringeRate(this.value)">
+          <option value="">Auto-calc fringe from Personnel...</option>
+          ${(window.GRANTED_ERP?.NCAT_FRINGE_RATES || []).map(f =>
+            `<option value="${f.rate}">${_bvEsc(f.label)}</option>`
+          ).join('')}
+        </select>
+      </div>
     </div>
 
     <div class="gs-grid" style="margin-top:12px">
@@ -137,6 +146,14 @@ function renderBudgetBuilder() {
 function bvSet(key, val) {
   const b = _bvState();
   b[key] = key === 'preset' ? val : Math.max(0, Number(val) || 0);
+  render();
+}
+
+function bvApplyFringeRate(rateStr) {
+  const rate = Number(rateStr);
+  if (!Number.isFinite(rate) || rate <= 0) return;
+  const b = _bvState();
+  b.fringe = Math.round((Number(b.personnel) || 0) * rate);
   render();
 }
 

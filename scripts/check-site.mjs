@@ -91,9 +91,11 @@ for (const modFile of [
   'js/modules/compliance-engine.js',
   'js/modules/rubric-engine.js',
   'js/modules/budget-engine.js',
+  'js/modules/erp-schema.js',
   'js/modules/grant-studio.js',
   'js/modules/budget-view.js',
   'js/modules/team-bios.js',
+  'js/modules/erp-bridge-view.js',
   'netlify/lib/auth.js'
 ]) {
   const lines = readFileSync(join(ROOT, modFile), 'utf8').split('\n').length;
@@ -119,6 +121,13 @@ const badOrigin = authLib.checkOriginAndRateLimit({ headers: { origin: 'https://
 ok(!badOrigin.ok && badOrigin.statusCode === 403, 'Origin guard blocks third-party cross-origin requests (403)');
 const goodOrigin = authLib.checkOriginAndRateLimit({ headers: { origin: 'https://thinkgrant.app' } });
 ok(goodOrigin.ok, 'Origin guard permits https://thinkgrant.app');
+
+// 8. Tier 1 ERP Bridge (Banner FOAPAL + InfoEd CSV export/import & formula-injection safety).
+const erp = require(join(ROOT, 'js', 'modules', 'erp-schema.js'));
+const erpCsv = erp.buildERPCsv([{ id: 'N1', title: '=CMD|evil', piDept: 'Natural Resources & Environmental Design', stage: 5, estimatedFunding: 250000 }]);
+ok(erpCsv.includes("'=CMD|evil") && erpCsv.includes('210400'), 'ERP CSV neutralizes formula injection and maps NC A&T NRED Org 210400');
+const parsed = erp.parseERPStatusCsv('Granted_ID,Title,InfoEd_Proposal_ID,Banner_Fund,Banner_Org,Stage_Num\nN1,"Soil Study",IE-2026-99,214820,210400,8', [{ id: 'N1', title: 'Soil Study', stage: 5 }]);
+ok(parsed.length === 1 && parsed[0].matchedId === 'N1' && parsed[0].infoEdId === 'IE-2026-99' && parsed[0].newStage === 8, 'ERP CSV parser matches live NOI and extracts InfoEd/Banner updates');
 
 console.log(`${passed} checks passed`);
 if (fails.length) { console.error(`${fails.length} FAILED:\n - ` + fails.join('\n - ')); process.exit(1); }

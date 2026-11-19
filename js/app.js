@@ -454,6 +454,7 @@ function render() {
     case 'readiness-studio':   workspace.appendChild(renderGrantStudio()); break;
     case 'budget-builder':     workspace.appendChild(renderBudgetBuilder()); break;
     case 'team-bios':          workspace.appendChild(renderTeamBiosStudio()); break;
+    case 'erp-bridge':         workspace.appendChild(renderErpBridge()); break;
     case 'team-members':       workspace.appendChild(renderAdminUsers()); break;
     default:                   workspace.appendChild(renderOverview());
   }
