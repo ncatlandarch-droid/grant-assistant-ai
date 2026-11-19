@@ -85,10 +85,40 @@ ok(flags.some(f => f.id === 'humanSubjects') && flags.some(f => f.id === 'animal
 const rScore = rub.scoreProposalAgainstRubric('nc-idea', 'Our full-time founder built and deployed a scalable AI SaaS platform in Greensboro, North Carolina with pilot customers, LOI traction, $50,000 milestones, and follow-on NSF STTR leverage.');
 ok(rScore.overall >= 40 && rScore.overall <= 100 && rScore.criteria.length === 4, `Rubric scorer returns weighted NC IDEA score (got ${rScore.overall})`);
 ok(rub.scoreProposalAgainstRubric('nc-idea', '').overall === 0, 'Empty draft scores 0 on rubric');
-for (const modFile of ['js/modules/compliance-engine.js', 'js/modules/rubric-engine.js', 'js/modules/grant-studio.js']) {
+for (const modFile of [
+  'js/modules/api-client.js',
+  'js/modules/docx-export.js',
+  'js/modules/compliance-engine.js',
+  'js/modules/rubric-engine.js',
+  'js/modules/budget-engine.js',
+  'js/modules/grant-studio.js',
+  'js/modules/budget-view.js',
+  'js/modules/team-bios.js',
+  'netlify/lib/auth.js'
+]) {
   const lines = readFileSync(join(ROOT, modFile), 'utf8').split('\n').length;
   ok(lines <= 500, `Modular limit <=500 lines for ${modFile} (got ${lines})`);
 }
+
+// 7. Sprint 2 engines: Budget/IDC (zero-negative + MTDC + NIFA 30% TFFA), Word exporter, and Auth guard.
+const bud = require(join(ROOT, 'js', 'modules', 'budget-engine.js'));
+const mtdcRes = bud.calculateBudget({ preset: 'ncat-on-campus', personnel: 100000, equipment: 20000, subawardTotal: 60000, subawardCount: 1, fringe: -500 });
+ok(mtdcRes.items.fringe === 0, 'Budget engine clamps negative line items to 0');
+ok(mtdcRes.mtdcBase === 125000 && mtdcRes.indirectCosts === 60000, `MTDC excludes equipment and subaward >$25K (base=${mtdcRes.mtdcBase}, idc=${mtdcRes.indirectCosts})`);
+const nifaRes = bud.calculateBudget({ preset: 'usda-nifa-tffa', personnel: 100000, awardCap: 120000 });
+ok(nifaRes.effectiveIdcPct <= 30.0 && !nifaRes.isZeroNegativeCompliant, `USDA NIFA 30% TFFA cap and over-cap detection work (eff=${nifaRes.effectiveIdcPct}%)`);
+
+const docx = require(join(ROOT, 'js', 'modules', 'docx-export.js'));
+const wordHtml = docx.buildWordHtml({ title: 'Test <script>', sections: [{ heading: 'Sec', body: 'Check [VERIFY: rate]' }], tables: [{ heading: 'T', headers: ['Col'], rows: [['Val']] }] });
+ok(!wordHtml.includes('<script>') && wordHtml.includes('scope="col"') && wordHtml.includes('fef08a'), 'Word exporter escapes HTML, adds WCAG table headers, and highlights [VERIFY]');
+
+const authLib = require(join(ROOT, 'netlify', 'lib', 'auth.js'));
+const noTok = await authLib.requireAuth({ headers: {} });
+ok(!noTok.ok && noTok.statusCode === 401, 'requireAuth blocks missing Bearer token (401)');
+const badOrigin = authLib.checkOriginAndRateLimit({ headers: { origin: 'https://evil-scraper.example' } });
+ok(!badOrigin.ok && badOrigin.statusCode === 403, 'Origin guard blocks third-party cross-origin requests (403)');
+const goodOrigin = authLib.checkOriginAndRateLimit({ headers: { origin: 'https://thinkgrant.app' } });
+ok(goodOrigin.ok, 'Origin guard permits https://thinkgrant.app');
 
 console.log(`${passed} checks passed`);
 if (fails.length) { console.error(`${fails.length} FAILED:\n - ` + fails.join('\n - ')); process.exit(1); }

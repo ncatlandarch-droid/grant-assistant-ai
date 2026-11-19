@@ -14,6 +14,10 @@
   - `js/modules/compliance-engine.js`, `js/modules/rubric-engine.js`, `js/modules/grant-studio.js`, `css/modules.css` — unified **Readiness & Compliance Studio** bridging University OSP (USDA NIFA, USDA SCRI) and Startup/SBIR (NSF STTR, NC IDEA SEED 16 subcriteria) with disqualifier scanning, automatic IRB/IACUC/IBC/Export/Cost-Share trigger detection, and `[VERIFY]` anti-hallucination AI refinement.
   - `js/opportunities.js` — flipped default view to live **Grants.gov** open/forecasted solicitations with agency filters and 1-click **"Start NOI"** prefill; moved 2025 historical NC A&T NOIs into a "Historical NC A&T Awards" tab.
   - `js/learning-center.js` + `storage.rules` — wired all 6 compressed Learning Center videos (63.38 MB total) and `.vtt` caption tracks to Firebase Storage (`grant-assistant-ai.firebasestorage.app/learning-videos/`).
+- **Modular Consolidation Sprint 2 (2026-11-19):**
+  - `netlify/lib/auth.js` + `js/modules/api-client.js` — cryptographic Firebase ID token verification (Google x509 certs + Node crypto) locking down `send-email` (PI/admin only) and `process-avatar` (signed-in only), plus origin + per-IP rate limiting on `gemini`.
+  - `netlify/functions/orcid-proxy.js` + `js/modules/team-bios.js` — public ORCID v3.0 profile/publication importer + Team Roster & AI Biosketch Studio (with `[VERIFY]` tags + Word export).
+  - `js/modules/budget-engine.js` + `js/modules/budget-view.js` + `js/modules/docx-export.js` — zero-negative 2 CFR 200 MTDC & USDA NIFA 30% TFFA Budget Calculator + AI Budget Justification + WCAG-structured Word (`.doc`) exporter.
 - **Commercial Branding:** `pricing.html` updated from `SFRIC ERD Studio` to `Think! Design and Planning, LLC`.
 
 ## Open Owner / Next-Session Actions

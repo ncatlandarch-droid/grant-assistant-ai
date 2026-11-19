@@ -1,4 +1,5 @@
 const { generate } = require('../lib/gemini');
+const { requireAuth } = require('../lib/auth');
 /* ============================================
    Netlify Function — Gemini Avatar Processor
    Accepts an uploaded photo, sends it to Gemini
@@ -9,6 +10,11 @@ const { generate } = require('../lib/gemini');
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
+  }
+
+  const authCheck = await requireAuth(event);
+  if (!authCheck.ok) {
+    return { statusCode: authCheck.statusCode, body: JSON.stringify({ error: authCheck.error }) };
   }
 
   const apiKey = process.env.GEMINI_API_KEY;

@@ -3,6 +3,7 @@
    Handles: submission confirm, admin alert, stage advance
    ============================================ */
 
+const { requireAuth } = require('../lib/auth');
 const RESEND_API = 'https://api.resend.com/emails';
 
 const STAGE_NAMES = [
@@ -46,6 +47,10 @@ exports.handler = async (event) => {
   catch { return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) }; }
 
   const { type, data } = body;
+  const authCheck = await requireAuth(event, { adminOnly: type === 'stage_advance' });
+  if (!authCheck.ok) {
+    return { statusCode: authCheck.statusCode, body: JSON.stringify({ error: authCheck.error }) };
+  }
   const emails = [];
 
   if (type === 'submission') {

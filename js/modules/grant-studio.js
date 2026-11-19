@@ -87,6 +87,7 @@ function renderGrantStudio() {
         ${gs.aiLoading ? 'Analyzing with Gemini...' : 'AI Strengthen (with [VERIFY] Guard)'}
       </button>
       ${st.noiData?.summary ? `<button type="button" class="btn btn-secondary" onclick="gsLoadFromNOI()">Load Current NOI Summary</button>` : ''}
+      ${gs.text.trim() ? `<button type="button" class="btn btn-secondary" onclick="gsExportWord()">Export Word (.doc)</button>` : ''}
       ${gs.text.trim() ? `<button type="button" class="btn btn-secondary" onclick="gsClear()">Clear</button>` : ''}
     </div>
 
@@ -195,6 +196,19 @@ function gsClear() {
   render();
 }
 
+function gsExportWord() {
+  const gs = _gsState();
+  if (!window.GRANTED_DOCX) return;
+  const score = window.GRANTED_RUBRIC_ENGINE?.scoreProposalAgainstRubric(gs.rubricKey, gs.text);
+  const sections = [{ heading: gs.section, body: gs.aiResult || gs.text }];
+  window.GRANTED_DOCX.exportWordDocument({
+    filename: `granted-${gs.section}`,
+    title: `${gs.section} — Proposal Draft`,
+    subtitle: score ? `${score.rubricName} (Rubric Readiness: ${score.overall}%)` : 'Granted Readiness Studio',
+    sections
+  });
+}
+
 async function gsRunAiRefine() {
   const gs = _gsState();
   if (!gs.text.trim() || gs.aiLoading) return;
@@ -215,7 +229,8 @@ async function gsRunAiRefine() {
   ].filter(Boolean).join('\n\n');
 
   try {
-    const resp = await fetch('/.netlify/functions/gemini', {
+    const fetcher = window.authFetch || fetch;
+    const resp = await fetcher('/.netlify/functions/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -276,7 +276,8 @@ function onAvatarUrlInput(url, previewId, imgId) {
 }
 
 async function _processAvatarWithGemini(base64, mimeType, previewId) {
-  const resp = await fetch('/.netlify/functions/process-avatar', {
+  const fetcher = window.authFetch || fetch;
+  const resp = await fetcher('/.netlify/functions/process-avatar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ imageData: base64, mimeType: mimeType || 'image/jpeg' })

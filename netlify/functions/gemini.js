@@ -1,4 +1,5 @@
 const { generate } = require('../lib/gemini');
+const { checkOriginAndRateLimit } = require('../lib/auth');
 /* ============================================
    Netlify Function — Gemini Chat Proxy
    Keeps GEMINI_API_KEY server-side only.
@@ -7,6 +8,11 @@ const { generate } = require('../lib/gemini');
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
+  }
+
+  const guard = checkOriginAndRateLimit(event);
+  if (!guard.ok) {
+    return { statusCode: guard.statusCode, body: JSON.stringify({ error: guard.error }) };
   }
 
   const apiKey = process.env.GEMINI_API_KEY;

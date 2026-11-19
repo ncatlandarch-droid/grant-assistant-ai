@@ -166,7 +166,8 @@ async function loadAllUserProfiles() {
 }
 
 function sendEmail(type, data) {
-  return fetch('/.netlify/functions/send-email', {
+  const fetcher = window.authFetch || fetch;
+  return fetcher('/.netlify/functions/send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type, data })
