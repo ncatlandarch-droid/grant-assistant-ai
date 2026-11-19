@@ -10,6 +10,12 @@
      • Completion badges / gamification
    ============================================ */
 
+const LEARNING_STORAGE_BUCKET = 'grant-assistant-ai.firebasestorage.app';
+
+function _learningAssetUrl(filename) {
+  return `https://firebasestorage.googleapis.com/v0/b/${LEARNING_STORAGE_BUCKET}/o/${encodeURIComponent('learning-videos/' + filename)}?alt=media`;
+}
+
 // Training module data
 const TRAINING_MODULES = [
   {
@@ -18,7 +24,8 @@ const TRAINING_MODULES = [
     desc: 'Understand the end-to-end grant submission journey — from initial research idea through the 12-stage pipeline to final award.',
     duration: '~5 min',
     icon: '🎯',
-    video: 'videos/01-grant-process.mp4',
+    video: _learningAssetUrl('01-grant-process.mp4'),
+    captions: _learningAssetUrl('01-grant-process.vtt'),
     quiz: [
       {
         q: 'What is the first formal step a PI takes to begin the grant process at NC A&T?',
@@ -53,7 +60,8 @@ const TRAINING_MODULES = [
     desc: 'Learn where the money is — federal agencies, 1890 programs, foundation grants, and how the AI matches your research to funding.',
     duration: '~5 min',
     icon: '💰',
-    video: 'videos/02-funding-opportunities.mp4',
+    video: _learningAssetUrl('02-funding-opportunities.mp4'),
+    captions: _learningAssetUrl('02-funding-opportunities.vtt'),
     quiz: [
       {
         q: 'Which program is specifically designated for 1890 land-grant institutions like NC A&T?',
@@ -93,7 +101,8 @@ const TRAINING_MODULES = [
     desc: 'Master the fundamentals of grant budgeting — IDC rates, MTDC calculations, cost share, and practical tips for new PIs.',
     duration: '~5 min',
     icon: '📊',
-    video: 'videos/03-budget-idc.mp4',
+    video: _learningAssetUrl('03-budget-idc.mp4'),
+    captions: _learningAssetUrl('03-budget-idc.vtt'),
     quiz: [
       {
         q: 'What does IDC stand for?',
@@ -133,7 +142,8 @@ const TRAINING_MODULES = [
     desc: 'Learn when IRB, IACUC, biosafety, and export control reviews are required — and why early identification prevents delays.',
     duration: '~5 min',
     icon: '⚖️',
-    video: 'videos/04-compliance.mp4',
+    video: _learningAssetUrl('04-compliance.mp4'),
+    captions: _learningAssetUrl('04-compliance.vtt'),
     quiz: [
       {
         q: 'Which review board must approve research involving human participants?',
@@ -178,7 +188,8 @@ const TRAINING_MODULES = [
     desc: 'Know who does what — from your Grant Manager to the Associate Dean to the Vice Chancellor for Research.',
     duration: '~5 min',
     icon: '👥',
-    video: 'videos/05-osp-roles.mp4',
+    video: _learningAssetUrl('05-osp-roles.mp4'),
+    captions: _learningAssetUrl('05-osp-roles.vtt'),
     quiz: [
       {
         q: 'What role does the Associate Dean for Research play in the grant process?',
@@ -228,7 +239,8 @@ const TRAINING_MODULES = [
     desc: 'Discover how interdisciplinary research strengthens proposals and how GRANT detects synergy across colleges.',
     duration: '~5 min',
     icon: '🤝',
-    video: 'videos/06-collaboration.mp4',
+    video: _learningAssetUrl('06-collaboration.mp4'),
+    captions: _learningAssetUrl('06-collaboration.vtt'),
     quiz: [
       {
         q: 'Why do major federal funders increasingly prefer interdisciplinary proposals?',
@@ -387,8 +399,9 @@ function renderModuleDetail() {
     </div>
 
     <div class="lc-video-wrap">
-      <video controls class="lc-video" poster="">
+      <video controls crossorigin="anonymous" preload="metadata" class="lc-video">
         <source src="${m.video}" type="video/mp4">
+        ${m.captions ? `<track kind="captions" src="${m.captions}" srclang="en" label="English">` : ''}
         <div class="lc-video-fallback">
           <div style="font-size:2.5rem;margin-bottom:8px">🎬</div>
           <div>Training video loading…</div>
