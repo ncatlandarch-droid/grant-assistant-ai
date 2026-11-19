@@ -82,7 +82,8 @@ const INSTITUTION_CONFIG = {
     { id: 'proposal-builder', label: '💡 Idea Builder' },
     { id: 'resources',        label: '📚 Resources' },
     { id: 'learning-center',  label: '🎓 Learning Center' },
-    { id: 'mock-review',      label: '📝 Mock Review' }
+    { id: 'mock-review',      label: '📝 Mock Review' },
+    { id: 'readiness-studio', label: 'Readiness Studio' }
   ],
 
   // ── Grant Office Contact ──────────────────────────────────

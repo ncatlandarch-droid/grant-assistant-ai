@@ -74,5 +74,21 @@ const bad = P('?opp=ABC-1&close=next%20week&title=' + 'x'.repeat(900) + '&src=ev
 ok(bad && bad.close === '' && bad.title.length <= 300 && bad.src === '', 'Prefill drops bad date, trims long title, ignores unknown src');
 ok(P('?opp=ABC-1&title=%3Cimg%20src%3Dx%20onerror%3Dalert(1)%3E').title.indexOf('<') === -1, 'Prefill strips angle brackets');
 
+// 6. Modular consolidation engines (compliance-engine + rubric-engine) pass offline tests & line limits.
+const comp = require(join(ROOT, 'js', 'modules', 'compliance-engine.js'));
+const rub  = require(join(ROOT, 'js', 'modules', 'rubric-engine.js'));
+const ncChecks = comp.checkProposalCompliance('Executive Summary', 'Our Greensboro, North Carolina franchise startup has [INSERT NAME] and https://example.com', 'nc-idea');
+ok(ncChecks.some(c => /Franchise/i.test(c.label) && !c.pass), 'Compliance flags NC IDEA franchise disqualifier');
+ok(ncChecks.some(c => /placeholder/i.test(c.label) && !c.pass), 'Compliance flags unfilled placeholder');
+const flags = comp.detectComplianceFlags('We will survey 100 farmers and collect livestock tissue using a UAV drone with 1:1 match.');
+ok(flags.some(f => f.id === 'humanSubjects') && flags.some(f => f.id === 'animals') && flags.some(f => f.id === 'exportCtrl') && flags.some(f => f.id === 'costShare'), 'Auto-compliance detects IRB, IACUC, Export Control, and Cost Share');
+const rScore = rub.scoreProposalAgainstRubric('nc-idea', 'Our full-time founder built and deployed a scalable AI SaaS platform in Greensboro, North Carolina with pilot customers, LOI traction, $50,000 milestones, and follow-on NSF STTR leverage.');
+ok(rScore.overall >= 40 && rScore.overall <= 100 && rScore.criteria.length === 4, `Rubric scorer returns weighted NC IDEA score (got ${rScore.overall})`);
+ok(rub.scoreProposalAgainstRubric('nc-idea', '').overall === 0, 'Empty draft scores 0 on rubric');
+for (const modFile of ['js/modules/compliance-engine.js', 'js/modules/rubric-engine.js', 'js/modules/grant-studio.js']) {
+  const lines = readFileSync(join(ROOT, modFile), 'utf8').split('\n').length;
+  ok(lines <= 500, `Modular limit <=500 lines for ${modFile} (got ${lines})`);
+}
+
 console.log(`${passed} checks passed`);
 if (fails.length) { console.error(`${fails.length} FAILED:\n - ` + fails.join('\n - ')); process.exit(1); }

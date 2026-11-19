@@ -9,7 +9,11 @@
 - **AI Backend (`netlify/lib/gemini.js`):** Configured for `gemini-3.8-flash` with automatic fallback to `gemini-3.5-flash`, 14 s hedging, server-only model selection, and valid `GEMINI_API_KEY` in Netlify across all contexts/functions.
 - **Firestore Security Rules (`firestore.rules`):** Deployed live to `grant-assistant-ai` on 2026-11-19. Fail-closed role-based rules covering `submissions`, `users`, plus all 5 consolidated `2-SBIR SRTT Grants` collections (`scraped_grants`, `grant_tracker`, `user_settings`, `draft_grants`, `grant_sections`).
 - **Auth-Scoped Submissions Listener (`js/auth.js`, `js/db.js`, `js/app.js`):** Listener starts only after sign-in, scoped to `piEmail` for PIs and all submissions for allowlisted admins.
-- **Automated Checks:** `npm run check` (246 checks) wired as Netlify build command; `npm run test:ai` (4 live tests).
+- **Automated Checks:** `npm run check` (offline syntax, security, fallback, prefill, and modular compliance/rubric engine tests) wired as Netlify build command; `npm run test:ai` (4 live tests).
+- **Modular Consolidation Sprint 1 (2026-11-19):**
+  - `js/modules/compliance-engine.js`, `js/modules/rubric-engine.js`, `js/modules/grant-studio.js`, `css/modules.css` — unified **Readiness & Compliance Studio** bridging University OSP (USDA NIFA, USDA SCRI) and Startup/SBIR (NSF STTR, NC IDEA SEED 16 subcriteria) with disqualifier scanning, automatic IRB/IACUC/IBC/Export/Cost-Share trigger detection, and `[VERIFY]` anti-hallucination AI refinement.
+  - `js/opportunities.js` — flipped default view to live **Grants.gov** open/forecasted solicitations with agency filters and 1-click **"Start NOI"** prefill; moved 2025 historical NC A&T NOIs into a "Historical NC A&T Awards" tab.
+  - `js/learning-center.js` + `storage.rules` — wired all 6 compressed Learning Center videos (63.38 MB total) and `.vtt` caption tracks to Firebase Storage (`grant-assistant-ai.firebasestorage.app/learning-videos/`).
 - **Commercial Branding:** `pricing.html` updated from `SFRIC ERD Studio` to `Think! Design and Planning, LLC`.
 
 ## Open Owner / Next-Session Actions

@@ -451,6 +451,7 @@ function render() {
     case 'resources':          workspace.appendChild(renderResources()); break;
     case 'learning-center':    workspace.appendChild(st._learningModule != null ? renderModuleDetail() : renderLearningCenter()); break;
     case 'mock-review':        workspace.appendChild(renderMockReview()); break;
+    case 'readiness-studio':   workspace.appendChild(renderGrantStudio()); break;
     case 'team-members':       workspace.appendChild(renderAdminUsers()); break;
     default:                   workspace.appendChild(renderOverview());
   }
